@@ -25,7 +25,7 @@ export const botConfig = {
     activities: [
       {
         // Text users will see (example: "Playing /help | Titan Bot").
-        name: "Hecho por Azmitia <3",
+        name: "Hecho con cariño por Azmitia ❤️",
         // Activity type number (0 = Playing).
         type: 4, 
       },
@@ -56,9 +56,9 @@ export const botConfig = {
   applications: {
     // Default questions shown when someone fills out an application.
     defaultQuestions: [
-      { question: "What is your name?", required: true },
-      { question: "How old are you?", required: true },
-      { question: "Why do you want to join?", required: true },
+      { question: "Cuál es tu nombre?", required: true },
+      { question: "Cuántos años tienes?", required: true },
+      { question: "Por qué quieres unirte?", required: true },
     ],
 
     // Embed colors by application status.
@@ -156,11 +156,11 @@ export const botConfig = {
   economy: {
     currency: {
       // Currency display name.
-      name: "coins",
+      name: "quetzales",
       // Plural display name.
-      namePlural: "coins",
+      namePlural: "quetzales",
       // Currency symbol shown in balances.
-      symbol: "$",
+      symbol: "Q.",
     },
 
     // Starting balance for new users.
@@ -281,7 +281,7 @@ export const botConfig = {
     announcementChannel: null,
 
     // Timezone used to calculate birthday dates.
-    timezone: "UTC",
+    timezone: "GMT-6",
   },
 
   // =========================
@@ -289,10 +289,10 @@ export const botConfig = {
   // =========================
   verification: {
     // Message shown when posting the verification panel.
-    defaultMessage: "Click the button below to verify yourself and gain access to the server!",
+    defaultMessage: "¡Haz click en el botón de abajo para verificarte y tener acceso al server!",
 
     // Text on the verification button.
-    defaultButtonText: "Verify",
+    defaultButtonText: "Verificar",
 
     // Automatic verification behavior.
     autoVerify: {
@@ -319,9 +319,9 @@ export const botConfig = {
 
       // Human-readable descriptions for each criteria mode.
       criteria: {
-        account_age: "Account must be older than specified days",
-        server_size: "All users if server has less than 1000 members",
-        none: "All users immediately"
+        account_age: "La cuenta debe tener una antigüedad superior a los días especificados.",
+        server_size: "Todos los usuarios si el server tiene menos de 1000 miembros.",
+        none: "Todos los usuarios inmediatamente"
       }
     },
 
@@ -359,11 +359,11 @@ export const botConfig = {
     // Welcome template posted when a user joins.
     // Placeholders: {user}, {server}, {memberCount}
     defaultWelcomeMessage:
-      "Welcome {user} to {server}! We now have {memberCount} members!",
+      "Bienvenido {user} a {server}! Ahora tenemos {memberCount} miembros!",
     // Goodbye template posted when a user leaves.
     // Placeholders: {user}, {memberCount}
     defaultGoodbyeMessage:
-      "{user} has left the server. We now have {memberCount} members.",
+      "{user} se fue a la verga. Ahora tenemos {memberCount} miembros, la puta que me parió.",
     // Channel ID for welcome messages.
     defaultWelcomeChannel: null,
     // Channel ID for goodbye messages.
@@ -376,8 +376,8 @@ export const botConfig = {
   counters: {
     defaults: {
       // Default naming/description templates for counter entries.
-      name: "{name} Counter",
-      description: "Server {name} counter",
+      name: "{name} Contador",
+      description: "Server {name} contador",
       // Channel type used for counters (typically "voice").
       type: "voice",
       // Channel name format. `{count}` is replaced automatically.
@@ -391,26 +391,26 @@ export const botConfig = {
     },
     messages: {
       // Default response messages for counter actions.
-      created: "✅ Created counter **{name}**",
-      deleted: "🗑️ Deleted counter **{name}**",
-      updated: "🔄 Updated counter **{name}**",
+      created: "✅ Contador creado **{name}**",
+      deleted: "🗑️ Contador eliminado **{name}**",
+      updated: "🔄 Contador actualizado **{name}**",
     },
     types: {
       // Built-in counter types and how each count is calculated.
       members: {
-        name: "👥 Members",
-        description: "Total members in the server",
+        name: "👥 Miembros",
+        description: "Total de miembros en el servidor",
         getCount: (guild) => guild.memberCount.toString(),
       },
       bots: {
         name: "🤖 Bots",
-        description: "Total bot accounts in the server",
+        description: "Total de bots en el servidor",
         getCount: (guild) =>
           guild.members.cache.filter((m) => m.user.bot).size.toString(),
       },
       members_only: {
-        name: "👤 Humans",
-        description: "Total human members (non-bots)",
+        name: "👤 Mortales",
+        description: "Total de mortales en el servidor (no bots)",
         getCount: (guild) =>
           guild.members.cache.filter((m) => !m.user.bot).size.toString(),
       },
@@ -421,13 +421,13 @@ export const botConfig = {
   // GENERIC BOT MESSAGES
   // =========================
   messages: {
-    noPermission: "You do not have permission to use this command.",
-    cooldownActive: "Please wait {time} before using this command again.",
-    errorOccurred: "An error occurred while executing this command.",
+    noPermission: "No tienes permisos para ejecutar este comando.",
+    cooldownActive: "Porfavor, espera {time} antes de volver a usar este comando.",
+    errorOccurred: "Un error ocurrió mientras se ejecutaba este comando.",
     missingPermissions:
-      "I am missing required permissions to perform this action.",
-    commandDisabled: "This command has been disabled.",
-    maintenanceMode: "The bot is currently in maintenance mode.",
+      "Me faltan los permisos necesarios para realizar esta acción.",
+    commandDisabled: "Este comando ha sido desactivado.",
+    maintenanceMode: "El bot se encuentra actualmente en modo de mantenimiento.",
   },
 
   // =========================
@@ -479,23 +479,23 @@ export function validateConfig(config) {
   }
 
   if (!process.env.DISCORD_TOKEN && !process.env.TOKEN) {
-    errors.push("Bot token is required (DISCORD_TOKEN or TOKEN environment variable)");
+    errors.push("Se requiere un token de bot (variable de entorno DISCORD_TOKEN o TOKEN)");
   }
 
   if (!process.env.CLIENT_ID) {
-    errors.push("Client ID is required (CLIENT_ID environment variable)");
+    errors.push("Se requiere el ID del cliente (variable de entorno CLIENT_ID).");
   }
 
   
   if (process.env.NODE_ENV === 'production') {
     if (!process.env.POSTGRES_HOST) {
-      errors.push("PostgreSQL host is required in production (POSTGRES_HOST environment variable)");
+      errors.push("Se requiere un servidor PostgreSQL en producción (variable de entorno POSTGRES_HOST).");
     }
     if (!process.env.POSTGRES_USER) {
-      errors.push("PostgreSQL user is required in production (POSTGRES_USER environment variable)");
+      errors.push("Se requiere un usuario de PostgreSQL en producción (variable de entorno POSTGRES_USER).");
     }
     if (!process.env.POSTGRES_PASSWORD) {
-      errors.push("PostgreSQL password is required in production (POSTGRES_PASSWORD environment variable)");
+      errors.push("Se requiere contraseña de PostgreSQL en producción (variable de entorno POSTGRES_PASSWORD).");
     }
   }
 
@@ -505,8 +505,8 @@ export function validateConfig(config) {
 
 const configErrors = validateConfig(botConfig);
 if (configErrors.length > 0) {
-  logger.error("Bot configuration errors:", configErrors.join("\n"));
-  if (process.env.NODE_ENV === "production") {
+  logger.error("Errores de configuración del bot:", configErrors.join("\n"));
+  if (process.env.NODE_ENV === "producción") {
     process.exit(1);
   }
 }
@@ -516,8 +516,8 @@ export const BotConfig = botConfig;
 
 export function getColor(path, fallback = "#99AAB5") {
   
-  if (typeof path === "number") return path;
-  if (typeof path === "string" && path.startsWith("#")) {
+  if (typeof path === "número") return path;
+  if (typeof path === "cadena" && path.startsWith("#")) {
     
     return parseInt(path.replace("#", ""), 16);
   }
@@ -529,7 +529,7 @@ export function getColor(path, fallback = "#99AAB5") {
     );
   
   // Convert the result to integer if it's a hex string
-  if (typeof result === "string" && result.startsWith("#")) {
+  if (typeof result === "cadena" && result.startsWith("#")) {
     return parseInt(result.replace("#", ""), 16);
   }
   return result;
@@ -537,7 +537,7 @@ export function getColor(path, fallback = "#99AAB5") {
 
 export function getRandomColor() {
   const colors = Object.values(botConfig.embeds.colors).flatMap((color) =>
-    typeof color === "string" ? color : Object.values(color),
+    typeof color === "cadena" ? color : Object.values(color),
   );
   return colors[Math.floor(Math.random() * colors.length)];
 }
