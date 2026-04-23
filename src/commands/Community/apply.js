@@ -18,10 +18,10 @@ import {
 function getApplicationStatusPresentation(statusValue) {
     const normalized = typeof statusValue === 'string' ? statusValue.trim().toLowerCase() : 'unknown';
     const statusLabel =
-        normalized === 'pending' ? 'In Progress' :
-        normalized === 'approved' ? 'Accepted' :
-        normalized === 'denied' ? 'Denied' :
-        'Unknown';
+        normalized === 'pending' ? 'En progreso' :
+        normalized === 'approved' ? 'Aceptada' :
+        normalized === 'denied' ? 'Rechazada' :
+        'Desconocido';
     const statusEmoji =
         normalized === 'pending' ? '🟡' :
         normalized === 'approved' ? '🟢' :
@@ -34,15 +34,15 @@ function getApplicationStatusPresentation(statusValue) {
 export default {
     data: new SlashCommandBuilder()
         .setName("apply")
-        .setDescription("Manage role applications")
+        .setDescription("Gestiona solicitudes de roles")
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("submit")
-                .setDescription("Submit an application for a role")
+                .setDescription("Enviar una solicitud para un rol")
                 .addStringOption((option) =>
                     option
                         .setName("application")
-                        .setDescription("The application you want to submit")
+                        .setDescription("La solicitud que deseas enviar")
                         .setRequired(true)
                         .setAutocomplete(true),
                 ),
@@ -50,18 +50,18 @@ export default {
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("status")
-                .setDescription("Check the status of your application")
+                .setDescription("Ver el estado de tu solicitud")
                 .addStringOption((option) =>
                     option
                         .setName("id")
-                        .setDescription("Application ID (leave empty to see all)")
+                        .setDescription("ID de la solicitud (déjalo vacío para ver todas)")
                         .setRequired(false),
                 ),
         )
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("list")
-                .setDescription("List available applications to apply for"),
+                .setDescription("Listar solicitudes disponibles"),
         ),
 
     category: "Community",
@@ -69,7 +69,7 @@ export default {
     execute: withErrorHandling(async (interaction) => {
         if (!interaction.inGuild()) {
             return InteractionHelper.safeReply(interaction, {
-                embeds: [errorEmbed("This command can only be used in a server.")],
+                embeds: [errorEmbed("Este comando solo puede usarse en un servidor.")],
                 flags: ["Ephemeral"],
             });
         }
@@ -82,7 +82,7 @@ export default {
             await InteractionHelper.safeDefer(interaction, { flags: isListCommand ? [] : ["Ephemeral"] });
         }
 
-        logger.info(`Apply command executed: ${subcommand}`, {
+        logger.info(`Comando apply ejecutado: ${subcommand}`, {
             userId: interaction.user.id,
             guildId: guild.id,
             subcommand
@@ -95,9 +95,9 @@ export default {
         
         if (!settings.enabled) {
             throw createError(
-                'Applications are disabled',
+                'Solicitudes desactivadas',
                 ErrorTypes.CONFIGURATION,
-                'Applications are currently disabled in this server.',
+                'Las solicitudes están desactivadas en este servidor.',
                 { guildId: guild.id }
             );
         }
@@ -125,7 +125,7 @@ export async function handleApplicationModal(interaction) {
     
     if (!applicationRole) {
         return InteractionHelper.safeEditReply(interaction, {
-            embeds: [errorEmbed('Application configuration not found.')],
+            embeds: [errorEmbed('Configuración de solicitud no encontrada.')],
             flags: ["Ephemeral"]
         });
     }
@@ -134,7 +134,7 @@ export async function handleApplicationModal(interaction) {
     
     if (!role) {
         return InteractionHelper.safeEditReply(interaction, {
-            embeds: [errorEmbed('Role not found.')],
+            embeds: [errorEmbed('Rol no encontrado.')],
             flags: ["Ephemeral"]
         });
     }
@@ -142,8 +142,7 @@ export async function handleApplicationModal(interaction) {
     const answers = [];
     const settings = await getApplicationSettings(interaction.client, interaction.guild.id);
     
-    // Get questions - use per-application questions if they exist, otherwise use global
-    let questions = settings.questions || ["Why do you want this role?", "What is your experience?"];
+    let questions = settings.questions || ["¿Por qué quieres este rol?", "¿Cuál es tu experiencia?"];
     const roleSettings = await getApplicationRoleSettings(interaction.client, interaction.guild.id, roleId);
     if (roleSettings.questions && roleSettings.questions.length > 0) {
         questions = roleSettings.questions;
@@ -169,10 +168,10 @@ export async function handleApplicationModal(interaction) {
         });
         
         const embed = successEmbed(
-            'Application Submitted',
-            `Your application for **${applicationRole.name}** has been submitted successfully!\n\n` +
-            `Application ID: \`${application.id}\`\n` +
-            `You can check the status with \`/apply status id:${application.id}\``
+            'Solicitud enviada',
+            `Tu solicitud para **${applicationRole.name}** ha sido enviada correctamente.\n\n` +
+            `ID de la solicitud: \`${application.id}\`\n` +
+            `Puedes ver el estado con \`/apply status id:${application.id}\``
         );
         
         await InteractionHelper.safeEditReply(interaction, { embeds: [embed], flags: ["Ephemeral"] });
@@ -180,19 +179,18 @@ export async function handleApplicationModal(interaction) {
         const settings = await getApplicationSettings(interaction.client, interaction.guild.id);
         const roleSettings = await getApplicationRoleSettings(interaction.client, interaction.guild.id, roleId);
         
-        // Use per-application log channel if exists, otherwise use global
         const logChannelId = roleSettings.logChannelId || settings.logChannelId;
         
         if (logChannelId) {
             const logChannel = interaction.guild.channels.cache.get(logChannelId);
             if (logChannel) {
                 const logEmbed = createEmbed({
-                    title: '📝 New Application',
-                    description: `**User:** <@${interaction.user.id}> (${interaction.user.tag})\n` +
-                        `**Application:** ${applicationRole.name}\n` +
-                        `**Role:** ${role.name}\n` +
-                        `**Application ID:** \`${application.id}\`\n` +
-                        `**Status:** 🟡 In Progress`
+                    title: '📝 Nueva solicitud',
+                    description: `**Usuario:** <@${interaction.user.id}> (${interaction.user.tag})\n` +
+                        `**Solicitud:** ${applicationRole.name}\n` +
+                        `**Rol:** ${role.name}\n` +
+                        `**ID de la solicitud:** \`${application.id}\`\n` +
+                        `**Estado:** 🟡 En progreso`
                 }).setColor(getColor('warning'));
                 
                 const logMessage = await logChannel.send({ embeds: [logEmbed] });
@@ -205,7 +203,7 @@ export async function handleApplicationModal(interaction) {
         }
         
     } catch (error) {
-        logger.error('Error creating application:', {
+        logger.error('Error al crear solicitud:', {
             error: error.message,
             userId: interaction.user.id,
             guildId: interaction.guild.id,
@@ -219,48 +217,47 @@ export async function handleApplicationModal(interaction) {
         });
     }
 }
-
 async function handleList(interaction) {
     try {
         const applicationRoles = await getApplicationRoles(interaction.client, interaction.guild.id);
         
         if (applicationRoles.length === 0) {
             return InteractionHelper.safeEditReply(interaction, {
-                embeds: [errorEmbed("No applications are currently available.")],
+                embeds: [errorEmbed("No hay solicitudes disponibles actualmente.")],
             });
         }
 
         const embed = createEmbed({
-            title: "Available Applications",
-            description: "Here are the roles you can apply for:"
+            title: "Solicitudes disponibles",
+            description: "Estos son los roles a los que puedes postularte:"
         });
 
         applicationRoles.forEach((appRole, index) => {
             const role = interaction.guild.roles.cache.get(appRole.roleId);
             embed.addFields({
                 name: `${index + 1}. ${appRole.name}`,
-                value: `**Role:** ${role ? `<@&${appRole.roleId}>` : 'Role not found'}\n` +
-                       `**Apply with:** \`/apply submit application:"${appRole.name}"\``,
+                value: `**Rol:** ${role ? `<@&${appRole.roleId}>` : 'Rol no encontrado'}\n` +
+                       `**Aplicar con:** \`/apply submit application:"${appRole.name}"\``,
                 inline: false
             });
         });
 
         embed.setFooter({
-            text: "Use /apply submit application:<name> to apply for any of these roles."
+            text: "Usa /apply submit application:<nombre> para aplicar a cualquiera de estos roles."
         });
 
         return InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
     } catch (error) {
-        logger.error('Error listing applications:', {
+        logger.error('Error al listar solicitudes:', {
             error: error.message,
             guildId: interaction.guild.id,
             stack: error.stack
         });
         
         throw createError(
-            'Failed to load applications',
+            'Error al cargar solicitudes',
             ErrorTypes.DATABASE,
-            'Failed to load applications. Please try again later.',
+            'No se pudieron cargar las solicitudes. Inténtalo más tarde.',
             { guildId: interaction.guild.id }
         );
     }
@@ -280,8 +277,8 @@ async function handleSubmit(interaction, settings) {
         return InteractionHelper.safeEditReply(interaction, {
             embeds: [
                 errorEmbed(
-                    "Application not found.",
-                    "Use `/apply list` to see available applications."
+                    "Solicitud no encontrada.",
+                    "Usa `/apply list` para ver las solicitudes disponibles."
                 ),
             ],
             flags: ["Ephemeral"],
@@ -299,7 +296,7 @@ async function handleSubmit(interaction, settings) {
         return InteractionHelper.safeEditReply(interaction, {
             embeds: [
                 errorEmbed(
-                    `You already have a pending application. Please wait for it to be reviewed.`,
+                    `Ya tienes una solicitud pendiente. Espera a que sea revisada.`,
                 ),
             ],
             flags: ["Ephemeral"],
@@ -309,17 +306,16 @@ async function handleSubmit(interaction, settings) {
     const role = interaction.guild.roles.cache.get(applicationRole.roleId);
     if (!role) {
         return InteractionHelper.safeEditReply(interaction, {
-            embeds: [errorEmbed('The role for this application no longer exists.')],
+            embeds: [errorEmbed('El rol para esta solicitud ya no existe.')],
             flags: ["Ephemeral"]
         });
     }
 
     const modal = new ModalBuilder()
         .setCustomId(`app_modal_${applicationRole.roleId}`)
-        .setTitle(`Application for ${applicationRole.name}`);
+        .setTitle(`Solicitud para ${applicationRole.name}`);
 
-    // Get questions - use per-application questions if they exist, otherwise use global
-    let questions = settings.questions || ["Why do you want this role?", "What is your experience?"];
+    let questions = settings.questions || ["¿Por qué quieres este rol?", "¿Cuál es tu experiencia?"];
     const roleSettings = await getApplicationRoleSettings(interaction.client, interaction.guild.id, applicationRole.roleId);
     if (roleSettings.questions && roleSettings.questions.length > 0) {
         questions = roleSettings.questions;
@@ -358,7 +354,7 @@ async function handleStatus(interaction) {
             return InteractionHelper.safeEditReply(interaction, {
                 embeds: [
                     errorEmbed(
-                        "Application not found or you do not have permission to view it.",
+                        "Solicitud no encontrada o no tienes permiso para verla.",
                     ),
                 ],
                 flags: ["Ephemeral"],
@@ -368,14 +364,15 @@ async function handleStatus(interaction) {
         const submittedAt = application?.createdAt ? new Date(application.createdAt) : null;
         const submittedAtDisplay = submittedAt && !Number.isNaN(submittedAt.getTime())
             ? submittedAt.toLocaleString()
-            : 'Unknown date';
+            : 'Fecha desconocida';
         const statusView = getApplicationStatusPresentation(application.status);
+
         const embed = createEmbed({
-            title: `Application #${application.id} - ${application.roleName || 'Unknown Role'}`,
+            title: `Solicitud #${application.id} - ${application.roleName || 'Rol desconocido'}`,
             description:
-                `**Application ID:** \`${application.id}\`\n` +
-                `**Status:** ${statusView.statusEmoji} ${statusView.statusLabel}\n` +
-                `**Submitted:** ${submittedAtDisplay}`
+                `**ID de la solicitud:** \`${application.id}\`\n` +
+                `**Estado:** ${statusView.statusEmoji} ${statusView.statusLabel}\n` +
+                `**Enviada:** ${submittedAtDisplay}`
         });
 
         return InteractionHelper.safeEditReply(interaction, { embeds: [embed], flags: ["Ephemeral"] });
@@ -389,7 +386,7 @@ async function handleStatus(interaction) {
         if (applications.length === 0) {
             return InteractionHelper.safeEditReply(interaction, {
                 embeds: [
-                    errorEmbed("You have not submitted any applications yet."),
+                    errorEmbed("No has enviado ninguna solicitud aún."),
                 ],
                 flags: ["Ephemeral"],
             });
@@ -400,29 +397,29 @@ async function handleStatus(interaction) {
             .slice(0, 10);
 
         const embed = createEmbed({
-            title: "Your Applications",
-            description: `Showing ${recentApplications.length} recent application(s).`
+            title: "Tus solicitudes",
+            description: `Mostrando ${recentApplications.length} solicitud(es) recientes.`
         });
 
         recentApplications.forEach((application) => {
             const submittedAt = application?.createdAt ? new Date(application.createdAt) : null;
             const submittedAtDisplay = submittedAt && !Number.isNaN(submittedAt.getTime())
                 ? submittedAt.toLocaleDateString()
-                : 'Unknown date';
+                : 'Fecha desconocida';
             const statusView = getApplicationStatusPresentation(application.status);
 
             embed.addFields({
-                name: `${statusView.statusEmoji} ${application.roleName || 'Unknown Role'} (${statusView.statusLabel})`,
+                name: `${statusView.statusEmoji} ${application.roleName || 'Rol desconocido'} (${statusView.statusLabel})`,
                 value:
                     `**ID:** \`${application.id}\`\n` +
-                    `**Status:** ${statusView.statusEmoji} ${statusView.statusLabel}\n` +
-                    `**Submitted:** ${submittedAtDisplay}`,
+                    `**Estado:** ${statusView.statusEmoji} ${statusView.statusLabel}\n` +
+                    `**Enviada:** ${submittedAtDisplay}`,
                 inline: true,
             });
         });
 
         if (applications.length > recentApplications.length) {
-            embed.setFooter({ text: `Showing latest ${recentApplications.length} of ${applications.length} applications.` });
+            embed.setFooter({ text: `Mostrando las últimas ${recentApplications.length} de ${applications.length} solicitudes.` });
         }
 
         return InteractionHelper.safeEditReply(interaction, { embeds: [embed], flags: ["Ephemeral"] });
