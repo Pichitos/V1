@@ -5,14 +5,15 @@ import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/e
 import { sanitizeInput } from '../../utils/sanitization.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
     .setName("mock")
-    .setDescription("cOnVeRtS yOuR tExT tO sPoNgEbOb CaSe.")
+    .setDescription("cOnViErTe tU tExTo eN eStIlO sPoNgEbOb.")
     .addStringOption((option) =>
       option
         .setName("text")
-        .setDescription("The text to mock.")
+        .setDescription("El texto que quieres parodiar.")
         .setRequired(true)
         .setMaxLength(1000),
     ),
@@ -27,7 +28,7 @@ export default {
         throw new TitanBotError(
           'Empty text provided to mock command',
           ErrorTypes.USER_INPUT,
-          'Please provide some text to mock!'
+          '¡Por favor proporciona un texto para parodiar!'
         );
       }
 
@@ -44,12 +45,12 @@ export default {
         }
       }
 
-      const embed = successEmbed("sPoNgEbOb cAsE", `"${mockedText}"`);
+      const embed = successEmbed("eStIlO sPoNgEbOb", `"${mockedText}"`);
 
       await InteractionHelper.safeReply(interaction, { embeds: [embed] });
-      logger.debug(`Mock command executed by user ${interaction.user.id} in guild ${interaction.guildId}`);
+      logger.debug(`Comando mock ejecutado por el usuario ${interaction.user.id} en el servidor ${interaction.guildId}`);
     } catch (error) {
-      logger.error('Mock command error:', error);
+      logger.error('Error en el comando mock:', error);
       await handleInteractionError(interaction, error, {
         commandName: 'mock',
         source: 'mock_command'
@@ -57,5 +58,3 @@ export default {
     }
   },
 };
-
-
