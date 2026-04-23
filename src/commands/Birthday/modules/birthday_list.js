@@ -6,6 +6,7 @@ import { logger } from '../../../utils/logger.js';
 import { handleInteractionError } from '../../../utils/errorHandler.js';
 
 import { InteractionHelper } from '../../../utils/interactionHelper.js';
+
 export default {
     async execute(interaction, config, client) {
         try {
@@ -19,19 +20,19 @@ export default {
             if (sortedBirthdays.length === 0) {
                 return await InteractionHelper.safeEditReply(interaction, {
                     embeds: [createEmbed({
-                        title: '❌ No Birthdays',
-                        description: 'No birthdays have been set in this server yet.',
+                        title: '❌ No hay cumpleaños',
+                        description: 'Aún no se han establecido cumpleaños en este servidor.',
                         color: 'error'
                     })]
                 });
             }
 
             const embed = createEmbed({
-                title: "🎂 Server Birthdays",
+                title: "🎂 Cumpleaños del servidor",
                 color: 'info'
             });
 
-            // Batch fetch to verify which users are still in the guild
+            // Obtener miembros para verificar quiénes siguen en el servidor
             const userIds = sortedBirthdays.map(b => b.userId);
             const fetchedMembers = await interaction.guild.members.fetch({ user: userIds }).catch(() => null);
 
@@ -48,7 +49,7 @@ export default {
                 birthdayList += `${displayIndex}. <@${birthday.userId}> - ${birthday.monthName} ${birthday.day}\n`;
             }
 
-            // Clean up birthday entries for members who left the server
+            // Eliminar registros de usuarios que ya no están en el servidor
             if (fetchedMembers && staleUserIds.length > 0) {
                 for (const userId of staleUserIds) {
                     deleteBirthday(client, guildId, userId).catch(() => null);
@@ -58,21 +59,21 @@ export default {
             if (displayIndex === 0) {
                 return await InteractionHelper.safeEditReply(interaction, {
                     embeds: [createEmbed({
-                        title: '❌ No Birthdays',
-                        description: 'No birthdays have been set by current server members.',
+                        title: '❌ No hay cumpleaños',
+                        description: 'Ningún miembro actual del servidor ha establecido su cumpleaños.',
                         color: 'error'
                     })]
                 });
             }
 
-            birthdayList = `**${displayIndex} birthday${displayIndex !== 1 ? 's' : ''} in ${interaction.guild.name}**\n\n` + birthdayList;
+            birthdayList = `**${displayIndex} cumpleaños${displayIndex !== 1 ? 's' : ''} en ${interaction.guild.name}**\n\n` + birthdayList;
 
             embed.setDescription(birthdayList);
-            embed.setFooter({ text: `Total: ${displayIndex} birthday${displayIndex !== 1 ? 's' : ''}` });
+            embed.setFooter({ text: `Total: ${displayIndex} cumpleaños${displayIndex !== 1 ? 's' : ''}` });
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
             
-            logger.info('Birthday list retrieved successfully', {
+            logger.info('Lista de cumpleaños obtenida correctamente', {
                 userId: interaction.user.id,
                 guildId,
                 birthdayCount: displayIndex,
@@ -80,7 +81,7 @@ export default {
                 commandName: 'birthday_list'
             });
         } catch (error) {
-            logger.error("Birthday list command execution failed", {
+            logger.error("Falló la ejecución del comando de lista de cumpleaños", {
                 error: error.message,
                 stack: error.stack,
                 userId: interaction.user.id,
@@ -94,6 +95,5 @@ export default {
         }
     }
 };
-
 
 
