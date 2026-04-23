@@ -10,22 +10,22 @@ const MIN_WORK_AMOUNT = 50;
 const MAX_WORK_AMOUNT = 300;
 const LAPTOP_MULTIPLIER = 1.5;
 const WORK_JOBS = [
-    "Software Developer",
+    "Desarrollador de software",
     "Barista",
-    "Janitor",
+    "Conserje",
     "YouTuber",
-    "Discord Bot Developer",
-    "Cashier",
-    "Pizza Delivery Driver",
-    "Librarian",
-    "Gardener",
-    "Data Analyst",
+    "Desarrollador de bots de Discord",
+    "Cajero",
+    "Repartidor de pizza",
+    "Bibliotecario",
+    "Jardinero",
+    "Analista de datos",
 ];
 
 export default {
     data: new SlashCommandBuilder()
         .setName('work')
-        .setDescription('Work to earn some money'),
+        .setDescription('Trabaja para ganar algo de dinero'),
 
     execute: withErrorHandling(async (interaction, config, client) => {
         const deferred = await InteractionHelper.safeDefer(interaction);
@@ -41,12 +41,12 @@ export default {
                 throw createError(
                     "Failed to load economy data for work",
                     ErrorTypes.DATABASE,
-                    "Failed to load your economy data. Please try again later.",
+                    "No se pudieron cargar tus datos de economía. Inténtalo de nuevo más tarde.",
                     { userId, guildId }
                 );
             }
 
-            logger.debug(`[ECONOMY] Work command started for ${userId}`, { userId, guildId });
+            logger.debug(`[ECONOMY] Comando work iniciado para ${userId}`, { userId, guildId });
 
             const lastWork = userData.lastWork || 0;
             const inventory = userData.inventory || {};
@@ -65,7 +65,7 @@ export default {
                     throw createError(
                         "Work cooldown active",
                         ErrorTypes.RATE_LIMIT,
-                        `You're working too fast! Wait **${Math.floor(remaining / 3600000)}h ${Math.floor((remaining % 3600000) / 60000)}m** before working again.`,
+                        `¡Estás trabajando demasiado rápido! Espera **${Math.floor(remaining / 3600000)}h ${Math.floor((remaining % 3600000) / 60000)}m** antes de trabajar otra vez.`,
                         { timeRemaining: remaining, cooldownType: 'work' }
                     );
                 }
@@ -74,11 +74,10 @@ export default {
             let earned = Math.floor(Math.random() * (MAX_WORK_AMOUNT - MIN_WORK_AMOUNT + 1)) + MIN_WORK_AMOUNT;
             const job = WORK_JOBS[Math.floor(Math.random() * WORK_JOBS.length)];
 
-            
             let multiplierMessage = "";
             if (hasLaptop > 0) {
                 earned = Math.floor(earned * LAPTOP_MULTIPLIER);
-                multiplierMessage = "\n💻 **Laptop Bonus:** +50% earnings!";
+                multiplierMessage = "\n💻 **Bonificación de laptop:** +50% de ganancias!";
             }
 
             userData.wallet = (userData.wallet || 0) + earned;
@@ -86,7 +85,7 @@ export default {
 
             await setEconomyData(client, guildId, userId, userData);
 
-            logger.info(`[ECONOMY_TRANSACTION] Work completed`, {
+            logger.info(`[ECONOMY_TRANSACTION] Trabajo completado`, {
                 userId,
                 guildId,
                 amount: earned,
@@ -98,23 +97,23 @@ export default {
             });
 
             const embed = successEmbed(
-                "💼 Work Complete!",
-                `You worked as a **${job}** and earned **$${earned.toLocaleString()}**!${multiplierMessage}`
+                "💼 ¡Trabajo completado!",
+                `Trabajaste como **${job}** y ganaste **$${earned.toLocaleString()}**!${multiplierMessage}`
             )
                 .addFields(
                     {
-                        name: "💰 New Balance",
+                        name: "💰 Nuevo saldo",
                         value: `$${userData.wallet.toLocaleString()}`,
                         inline: true,
                     },
                     {
-                        name: "⏰ Next Work",
+                        name: "⏰ Próximo trabajo",
                         value: `<t:${Math.floor((now + WORK_COOLDOWN) / 1000)}:R>`,
                         inline: true,
                     }
                 )
                 .setFooter({
-                    text: `Requested by ${interaction.user.tag}`,
+                    text: `Solicitado por ${interaction.user.tag}`,
                     iconURL: interaction.user.displayAvatarURL(),
                 });
 
