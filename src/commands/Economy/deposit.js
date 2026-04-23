@@ -8,11 +8,11 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('deposit')
-        .setDescription('Deposit money from your wallet into your bank')
+        .setDescription('Deposita dinero de tu billetera en tu banco')
         .addStringOption(option =>
             option
                 .setName('amount')
-                .setDescription('Amount to deposit (number or "all")')
+                .setDescription('Cantidad a depositar (número o "all")')
                 .setRequired(true)
         ),
 
@@ -30,7 +30,7 @@ export default {
                 throw createError(
                     "Failed to load economy data",
                     ErrorTypes.DATABASE,
-                    "Failed to load your economy data. Please try again later.",
+                    "No se pudieron cargar tus datos de economía. Inténtalo de nuevo más tarde.",
                     { userId, guildId }
                 );
             }
@@ -47,7 +47,7 @@ export default {
                     throw createError(
                         "Invalid deposit amount",
                         ErrorTypes.VALIDATION,
-                        `Please enter a valid number or 'all'. You entered: \`${amountInput}\``,
+                        `Por favor ingresa un número válido o 'all'. Ingresaste: \`${amountInput}\``,
                         { amountInput, userId }
                     );
                 }
@@ -57,7 +57,7 @@ export default {
                 throw createError(
                     "Zero deposit amount",
                     ErrorTypes.VALIDATION,
-                    "You have no cash to deposit.",
+                    "No tienes dinero en efectivo para depositar.",
                     { userId, walletBalance: userData.wallet }
                 );
             }
@@ -68,7 +68,7 @@ export default {
                     embeds: [
                         MessageTemplates.ERRORS.INVALID_INPUT(
                             "deposit amount",
-                            `You tried to deposit more than you have. Depositing your remaining cash: **$${depositAmount.toLocaleString()}**`
+                            `Intentaste depositar más de lo que tienes. Depositando tu efectivo restante: **$${depositAmount.toLocaleString()}**`
                         )
                     ],
                     flags: ["Ephemeral"],
@@ -81,7 +81,7 @@ export default {
                 throw createError(
                     "Bank is full",
                     ErrorTypes.VALIDATION,
-                    `Your bank is currently full (Max Capacity: $${maxBank.toLocaleString()}). Purchase a **Bank Upgrade** to increase your limit.`,
+                    `Tu banco está lleno actualmente (Capacidad máxima: $${maxBank.toLocaleString()}). Compra una **Mejora del banco** para aumentar tu límite.`,
                     { maxBank, currentBank: userData.bank, userId }
                 );
             }
@@ -95,7 +95,7 @@ export default {
                         embeds: [
                             MessageTemplates.ERRORS.INVALID_INPUT(
                                 "deposit amount",
-                                `You only had space for **$${depositAmount.toLocaleString()}** in your bank account (Max: $${maxBank.toLocaleString()}). The rest remains in your cash.`
+                                `Solo tenías espacio para **$${depositAmount.toLocaleString()}** en tu cuenta bancaria (Máx: $${maxBank.toLocaleString()}). El resto permanece en tu efectivo.`
                             )
                         ],
                         flags: ["Ephemeral"],
@@ -107,7 +107,7 @@ export default {
                 throw createError(
                     "No space or cash for deposit",
                     ErrorTypes.VALIDATION,
-                    "The amount you tried to deposit was either 0 or exceeded your bank capacity after checking your cash balance.",
+                    "La cantidad que intentaste depositar era 0 o excedía la capacidad de tu banco después de revisar tu saldo en efectivo.",
                     { depositAmount, availableSpace, walletBalance: userData.wallet }
                 );
             }
@@ -119,16 +119,16 @@ export default {
 
             const embed = MessageTemplates.SUCCESS.DATA_UPDATED(
                 "deposit",
-                `You successfully deposited **$${depositAmount.toLocaleString()}** into your bank.`
+                `Has depositado con éxito **$${depositAmount.toLocaleString()}** en tu banco.`
             )
                 .addFields(
                     {
-                        name: "💵 New Cash Balance",
+                        name: "💵 Nuevo saldo en efectivo",
                         value: `$${userData.wallet.toLocaleString()}`,
                         inline: true,
                     },
                     {
-                        name: "🏦 New Bank Balance",
+                        name: "🏦 Nuevo saldo bancario",
                         value: `$${userData.bank.toLocaleString()} / $${maxBank.toLocaleString()}`,
                         inline: true,
                     },
@@ -137,8 +137,6 @@ export default {
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
     }, { command: 'deposit' })
 };
-
-
 
 
 
