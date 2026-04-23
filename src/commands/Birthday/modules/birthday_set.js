@@ -5,6 +5,7 @@ import { logger } from '../../../utils/logger.js';
 import { handleInteractionError } from '../../../utils/errorHandler.js';
 
 import { InteractionHelper } from '../../../utils/interactionHelper.js';
+
 export default {
     async execute(interaction, config, client) {
         try {
@@ -20,12 +21,12 @@ export default {
             
             await InteractionHelper.safeEditReply(interaction, {
                 embeds: [successEmbed(
-                    `Your birthday has been set to **${result.data.monthName} ${result.data.day}**!`,
-                    "Birthday Set! 🎂"
+                    `Tu cumpleaños ha sido establecido para el **${result.data.monthName} ${result.data.day}**!`,
+                    "¡Cumpleaños establecido! 🎂"
                 )]
             });
         } catch (error) {
-            logger.error("Birthday set command execution failed", {
+            logger.error("Falló la ejecución del comando de establecer cumpleaños", {
                 error: error.message,
                 stack: error.stack,
                 userId: interaction.user.id,
