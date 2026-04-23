@@ -4,14 +4,15 @@ import { logger } from '../../utils/logger.js';
 import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
-    data: new SlashCommandBuilder()
+  data: new SlashCommandBuilder()
     .setName("roll")
-    .setDescription("Rolls dice using standard notation (e.g., 2d20, 1d6 + 5).")
+    .setDescription("Lanza dados usando notación estándar (ej: 2d20, 1d6 + 5).")
     .addStringOption((option) =>
       option
         .setName("notation")
-        .setDescription("The dice notation (e.g., 2d6, 1d20 + 4)")
+        .setDescription("La notación de dados (ej: 2d6, 1d20 + 4)")
         .setRequired(true)
         .setMaxLength(50),
     ),
@@ -30,9 +31,9 @@ export default {
 
       if (!match) {
         throw new TitanBotError(
-          `Invalid dice notation: ${notation}`,
+          `Notación de dados inválida: ${notation}`,
           ErrorTypes.USER_INPUT,
-          'Invalid notation. Use format like `1d20` or `3d6+5`.'
+          'Notación inválida. Usa un formato como `1d20` o `3d6+5`.'
         );
       }
 
@@ -40,20 +41,19 @@ export default {
       const numSides = parseInt(match[2], 10);
       const modifier = parseInt(match[3] || "0", 10);
 
-      
       if (numDice < 1 || numDice > 20) {
         throw new TitanBotError(
-          `Too many dice requested: ${numDice}`,
+          `Demasiados dados solicitados: ${numDice}`,
           ErrorTypes.VALIDATION,
-          'Please keep the number of dice between 1 and 20.'
+          'Por favor usa entre 1 y 20 dados.'
         );
       }
 
       if (numSides < 1 || numSides > 1000) {
         throw new TitanBotError(
-          `Invalid number of sides: ${numSides}`,
+          `Número de caras inválido: ${numSides}`,
           ErrorTypes.VALIDATION,
-          'Please keep the number of sides between 1 and 1000.'
+          'Por favor usa entre 1 y 1000 caras.'
         );
       }
 
@@ -69,16 +69,19 @@ export default {
       const finalTotal = totalRoll + modifier;
 
       const resultsDetail =
-        numDice > 1 ? `**Rolls:** ${rolls.join(" + ")}\n` : "";
+        numDice > 1 ? `**Tiradas:** ${rolls.join(" + ")}\n` : "";
       const modifierText = modifier !== 0 ? ` + (${modifier})` : "";
 
       const embed = successEmbed(
-        `🎲 Rolling ${numDice}d${numSides}${modifier !== 0 ? match[3] : ""}`,
-        `${resultsDetail}**Total Roll:** ${totalRoll}${modifierText} = **${finalTotal}**`,
+        `🎲 Lanzando ${numDice}d${numSides}${modifier !== 0 ? match[3] : ""}`,
+        `${resultsDetail}**Total:** ${totalRoll}${modifierText} = **${finalTotal}**`,
       );
 
       await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
-      logger.debug(`Roll command executed by user ${interaction.user.id} with notation ${notation} in guild ${interaction.guildId}`);
+
+      logger.debug(
+        `Roll command executed by user ${interaction.user.id} with notation ${notation} in guild ${interaction.guildId}`
+      );
     } catch (error) {
       await handleInteractionError(interaction, error, {
         commandName: 'roll',
