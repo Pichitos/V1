@@ -10,7 +10,7 @@ const ALLOWED_ROLE_ID = '1495143740703244368';
 
 export default {
     data: new SlashCommandBuilder()
-        .setName('add-money')
+        .setName('addmoney')
         .setDescription('Añadir dinero a un usuario')
         .addUserOption(option =>
             option
