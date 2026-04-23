@@ -2,28 +2,29 @@ import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Mess
 import { createEmbed } from '../../utils/embeds.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName("bug")
-        .setDescription("Report a bug or issue with the bot"),
+        .setDescription("Reporta un error o problema del bot"),
 
     async execute(interaction) {
         const githubButton = new ButtonBuilder()
-            .setLabel('?? Report Bug on GitHub')
+            .setLabel('🐛 Reportar error en GitHub')
             .setStyle(ButtonStyle.Link)
             .setURL('https://github.com/codebymitch/TitanBot/issues');
 
         const row = new ActionRowBuilder().addComponents(githubButton);
 
         const bugReportEmbed = createEmbed({
-            title: '?? Bug Report',
-            description: 'Found a bug? Please report it on our GitHub Issues page!\n\n' +
-            '**When reporting a bug, please include:**\n' +
-            '� ?? Detailed description of the issue\n' +
-            '� ?? Steps to reproduce the problem\n' +
-            '� ?? Screenshots if applicable\n' +
-            '� ?? Your bot version and environment\n\n' +
-            'This helps us fix issues faster and more effectively!',
+            title: '🐛 Reporte de errores',
+            description: '¿Encontraste un error? ¡Repórtalo en nuestra página de GitHub!\n\n' +
+            '**Al reportar un error, incluye:**\n' +
+            '• 📝 Descripción detallada del problema\n' +
+            '• 🔁 Pasos para reproducirlo\n' +
+            '• 📸 Capturas de pantalla (si aplica)\n' +
+            '• ⚙️ Versión del bot y entorno\n\n' +
+            '¡Esto nos ayuda a solucionar los problemas más rápido!',
             color: 'error'
         })
             .setTimestamp();
@@ -34,7 +35,5 @@ export default {
         });
     },
 };
-
-
 
 
