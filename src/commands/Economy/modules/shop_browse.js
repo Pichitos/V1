@@ -1,4 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, MessageFlags } from 'discord.js';
+import {
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ComponentType,
+    EmbedBuilder,
+    MessageFlags,
+} from 'discord.js';
 import { shopItems } from '../../../config/shop/items.js';
 import { getColor } from '../../../config/bot.js';
 import { logger } from '../../../utils/logger.js';
@@ -6,85 +13,106 @@ import { logger } from '../../../utils/logger.js';
 export default {
     async execute(interaction, config, client) {
         try {
-            const TARGET_MAX_PAGES = 3;
-            const ITEMS_PER_PAGE = Math.max(1, Math.ceil(shopItems.length / TARGET_MAX_PAGES));
-            const totalPages = Math.ceil(shopItems.length / ITEMS_PER_PAGE);
-            let currentPage = 1;
+            const MAX_PAGINAS_OBJETIVO = 3;
+            const ITEMS_POR_PAGINA = Math.max(1, Math.ceil(shopItems.length / MAX_PAGINAS_OBJETIVO));
+            const totalPaginas = Math.ceil(shopItems.length / ITEMS_POR_PAGINA);
+            let paginaActual = 1;
 
-            const createShopEmbed = (page) => {
-                const startIndex = (page - 1) * ITEMS_PER_PAGE;
-                const pageItems = shopItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+            const crearEmbedTienda = (pagina) => {
+                const inicio = (pagina - 1) * ITEMS_POR_PAGINA;
+                const itemsPagina = shopItems.slice(inicio, inicio + ITEMS_POR_PAGINA);
+
                 const embed = new EmbedBuilder()
-                    .setTitle('🛒 Store')
+                    .setTitle('🛒 Tienda')
                     .setColor(getColor('primary'))
-                    .setDescription('Use `/buy item_id:<id> quantity:<amount>` to purchase an item.');
-                pageItems.forEach(item => {
+                    .setDescription('Usa `/buy item_id:<id> quantity:<cantidad>` para comprar un objeto.');
+
+                itemsPagina.forEach(item => {
                     embed.addFields({
                         name: `${item.name} (${item.id})`,
-                        value: `🏷️ **Type:** ${item.type}\n💚 **Price:** $${item.price.toLocaleString()}\n${item.description}`,
+                        value:
+                            `🏷️ **Tipo:** ${item.type}\n` +
+                            `💚 **Precio:** $${item.price.toLocaleString()}\n` +
+                            `${item.description}`,
                         inline: false,
                     });
                 });
-                embed.setFooter({ text: `Page ${page}/${totalPages}` });
+
+                embed.setFooter({ text: `Página ${pagina}/${totalPaginas}` });
                 return embed;
             };
 
-            const createShopComponents = (page) => {
-                if (totalPages <= 1) return [];
+            const crearComponentesTienda = (pagina) => {
+                if (totalPaginas <= 1) return [];
                 return [
                     new ActionRowBuilder().addComponents(
                         new ButtonBuilder()
                             .setCustomId('shop_prev')
-                            .setLabel('⬅️ Previous')
+                            .setLabel('⬅️ Anterior')
                             .setStyle(ButtonStyle.Secondary)
-                            .setDisabled(page === 1),
+                            .setDisabled(pagina === 1),
                         new ButtonBuilder()
                             .setCustomId('shop_next')
-                            .setLabel('Next ➡️')
+                            .setLabel('Siguiente ➡️')
                             .setStyle(ButtonStyle.Secondary)
-                            .setDisabled(page === totalPages),
+                            .setDisabled(pagina === totalPaginas),
                     ),
                 ];
             };
 
-            const message = await interaction.reply({
-                embeds: [createShopEmbed(currentPage)],
-                components: createShopComponents(currentPage),
+            const mensaje = await interaction.reply({
+                embeds: [crearEmbedTienda(paginaActual)],
+                components: crearComponentesTienda(paginaActual),
                 flags: 0,
             });
 
-            const collector = message.createMessageComponentCollector({
+            const collector = mensaje.createMessageComponentCollector({
                 componentType: ComponentType.Button,
                 time: 300000,
             });
 
             collector.on('collect', async (buttonInteraction) => {
                 if (buttonInteraction.user.id !== interaction.user.id) {
-                    await buttonInteraction.reply({ content: '❌ You cannot use these buttons. Run `/shop browse` to get your own shop view.', flags: 64 });
+                    await buttonInteraction.reply({
+                        content: '❌ No puedes usar estos botones. Ejecuta `/shop browse` para tener tu propia vista de la tienda.',
+                        flags: 64,
+                    });
                     return;
                 }
+
                 const { customId } = buttonInteraction;
+
                 if (customId === 'shop_prev' || customId === 'shop_next') {
                     await buttonInteraction.deferUpdate();
-                    if (customId === 'shop_prev' && currentPage > 1) currentPage--;
-                    else if (customId === 'shop_next' && currentPage < totalPages) currentPage++;
+
+                    if (customId === 'shop_prev' && paginaActual > 1) paginaActual--;
+                    else if (customId === 'shop_next' && paginaActual < totalPaginas) paginaActual++;
+
                     await buttonInteraction.editReply({
-                        embeds: [createShopEmbed(currentPage)],
-                        components: createShopComponents(currentPage),
+                        embeds: [crearEmbedTienda(paginaActual)],
+                        components: crearComponentesTienda(paginaActual),
                     });
                 }
             });
 
             collector.on('end', async () => {
                 try {
-                    const disabledComponents = createShopComponents(currentPage);
-                    disabledComponents.forEach(row => row.components.forEach(btn => btn.setDisabled(true)));
-                    await message.edit({ components: disabledComponents });
+                    const componentesDeshabilitados = crearComponentesTienda(paginaActual);
+                    componentesDeshabilitados.forEach(row =>
+                        row.components.forEach(btn => btn.setDisabled(true))
+                    );
+
+                    await mensaje.edit({ components: componentesDeshabilitados });
                 } catch (_) {}
             });
+
         } catch (error) {
             logger.error('shop_browse error:', error);
-            await interaction.reply({ content: '❌ An error occurred while loading the shop.', flags: MessageFlags.Ephemeral });
+
+            await interaction.reply({
+                content: '❌ Ocurrió un error al cargar la tienda.',
+                flags: MessageFlags.Ephemeral,
+            });
         }
     },
 };
