@@ -5,20 +5,21 @@ import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/e
 import { sanitizeInput } from '../../utils/sanitization.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
-    data: new SlashCommandBuilder()
+  data: new SlashCommandBuilder()
     .setName("wanted")
-    .setDescription("Create a WANTED poster for a user.")
+    .setDescription("Crea un cartel de SE BUSCA para un usuario.")
     .addUserOption((option) =>
       option
         .setName("user")
-        .setDescription("The user who is wanted.")
+        .setDescription("El usuario que es buscado.")
         .setRequired(true),
     )
     .addStringOption((option) =>
       option
         .setName("crime")
-        .setDescription("The crime they committed.")
+        .setDescription("El crimen que cometió.")
         .setRequired(false)
         .setMaxLength(100),
     ),
@@ -31,8 +32,7 @@ export default {
       const targetUser = interaction.options.getUser("user");
       const crimeRaw = interaction.options.getString("crime");
 
-      
-      let crime = "Too adorable for this server.";
+      let crime = "Demasiado adorable para este servidor.";
       if (crimeRaw) {
         const sanitizedCrime = sanitizeInput(crimeRaw.trim(), 100);
         if (sanitizedCrime.length > 0) {
@@ -40,12 +40,11 @@ export default {
         }
       }
 
-      
       if (!targetUser) {
         throw new TitanBotError(
-          'Target user not found for wanted command',
+          'Usuario objetivo no encontrado en wanted',
           ErrorTypes.USER_INPUT,
-          'Could not find the specified user.'
+          'No se pudo encontrar al usuario especificado.'
         );
       }
 
@@ -56,12 +55,12 @@ export default {
 
       const embed = createEmbed({
         color: 'primary',
-        title: '💥 BIG BOUNTY: WANTED! 💥',
-        description: `**CRIMINAL:** ${targetUser.tag}\n**CRIME:** ${crime}`,
+        title: '💥 GRAN RECOMPENSA: SE BUSCA 💥',
+        description: `**CRIMINAL:** ${targetUser.tag}\n**CRIMEN:** ${crime}`,
         fields: [
           {
-            name: "DEAD OR ALIVE",
-            value: `**BOUNTY:** ${bounty}`,
+            name: "VIVO O MUERTO",
+            value: `**RECOMPENSA:** ${bounty}`,
             inline: false,
           },
         ],
@@ -69,12 +68,15 @@ export default {
           url: targetUser.displayAvatarURL({ size: 1024, extension: 'png' }),
         },
         footer: {
-          text: `Last seen in ${interaction.guild.name}`,
+          text: `Última vez visto en ${interaction.guild.name}`,
         },
       });
 
       await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
-      logger.debug(`Wanted command executed by user ${interaction.user.id} for ${targetUser.id} in guild ${interaction.guildId}`);
+
+      logger.debug(
+        `Wanted command executed by user ${interaction.user.id} for ${targetUser.id} in guild ${interaction.guildId}`
+      );
     } catch (error) {
       logger.error('Wanted command error:', error);
       await handleInteractionError(interaction, error, {
