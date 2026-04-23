@@ -12,17 +12,17 @@ const PICKAXE_MULTIPLIER = 1.2;
 const DIAMOND_PICKAXE_MULTIPLIER = 2.0;
 
 const MINE_LOCATIONS = [
-    "abandoned gold mine",
-    "dark, damp cave",
-    "backyard rock quarry",
-    "volcanic obsidian vent",
-    "deep-sea mineral trench",
+    "mina de oro abandonada",
+    "cueva oscura y húmeda",
+    "cantera de rocas del patio trasero",
+    "ventilación de obsidiana volcánica",
+    "trinchera de minerales en el fondo del mar",
 ];
 
 export default {
     data: new SlashCommandBuilder()
         .setName('mine')
-        .setDescription('Go mining to earn money'),
+        .setDescription('Ve a minar para ganar dinero'),
 
     execute: withErrorHandling(async (interaction, config, client) => {
         const deferred = await InteractionHelper.safeDefer(interaction);
@@ -47,7 +47,7 @@ export default {
                 throw createError(
                     "Mining cooldown active",
                     ErrorTypes.RATE_LIMIT,
-                    `Your pickaxe is cooling down. Wait for **${hours}h ${minutes}m** before mining again.`,
+                    `Tu pico aún está en enfriamiento. Espera **${hours}h ${minutes}m** antes de minar de nuevo.`,
                     { remaining, cooldownType: 'mine' }
                 );
             }
@@ -62,10 +62,10 @@ export default {
 
             if (hasDiamondPickaxe > 0) {
                 finalEarned = Math.floor(baseEarned * DIAMOND_PICKAXE_MULTIPLIER);
-                multiplierMessage = `\n💎 **Diamond Pickaxe Bonus: +100%**`;
+                multiplierMessage = `\n💎 **Bonificación de pico de diamante: +100%**`;
             } else if (hasPickaxe > 0) {
                 finalEarned = Math.floor(baseEarned * PICKAXE_MULTIPLIER);
-                multiplierMessage = `\n⛏️ **Pickaxe Bonus: +20%**`;
+                multiplierMessage = `\n⛏️ **Bonificación de pico: +20%**`;
             }
 
             const location =
@@ -74,25 +74,24 @@ export default {
                 ];
 
             userData.wallet += finalEarned;
-userData.lastMine = now;
+            userData.lastMine = now;
 
             await setEconomyData(client, guildId, userId, userData);
 
             const embed = successEmbed(
-                "💰 Mining Expedition Successful!",
-                `You explored a **${location}** and managed to find minerals worth **$${finalEarned.toLocaleString()}**!${multiplierMessage}`,
+                "💰 ¡Expedición de minería exitosa!",
+                `Exploraste una **${location}** y encontraste minerales por valor de **$${finalEarned.toLocaleString()}**!${multiplierMessage}`,
             )
                 .addFields({
-                    name: "💵 New Cash Balance",
+                    name: "💵 Nuevo saldo en efectivo",
                     value: `$${userData.wallet.toLocaleString()}`,
                     inline: true,
                 })
-                .setFooter({ text: `Next mine available in 1 hour.` });
+                .setFooter({ text: `Podrás volver a minar en 1 hora.` });
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
     }, { command: 'mine' })
 };
-
 
 
 
