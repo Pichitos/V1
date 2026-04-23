@@ -1,50 +1,57 @@
-import { SlashCommandBuilder, MessageFlags } from 'discord.js';
-import { createEmbed } from '../../utils/embeds.js';
-import { logger } from '../../utils/logger.js';
-import { InteractionHelper } from '../../utils/interactionHelper.js';
+import {
+    SlashCommandBuilder,
+    EmbedBuilder,
+    MessageFlags,
+} from 'discord.js';
 
 export default {
     data: new SlashCommandBuilder()
         .setName("ping")
-        .setDescription("Checks the bot's latency and API speed"),
+        .setDescription("Mide la latencia del bot y la velocidad de la API"),
 
     async execute(interaction) {
-        const deferSuccess = await InteractionHelper.safeDefer(interaction);
-        if (!deferSuccess) {
-            logger.warn(`Ping interaction defer failed`, {
-                userId: interaction.user.id,
-                guildId: interaction.guildId,
-                commandName: 'ping'
-            });
-            return;
-        }
-
         try {
-            await InteractionHelper.safeEditReply(interaction, {
-                content: "Pinging...",
+            // Evita que la interacción expire
+            await interaction.deferReply();
+
+            // Mensaje inicial
+            const sent = await interaction.editReply({
+                content: "Midiendo latencia...",
             });
 
-            const latency = Date.now() - interaction.createdTimestamp;
-            const apiLatency = Math.round(interaction.client.ws.ping);
+            // Cálculo de latencias
+            const latenciaBot = sent.createdTimestamp - interaction.createdTimestamp;
+            const latenciaAPI = Math.round(interaction.client.ws.ping);
 
-            const embed = createEmbed({ title: "🏓 Pong!", description: null }).addFields(
-                { name: "Bot Latency", value: `${latency}ms`, inline: true },
-                { name: "API Latency", value: `${apiLatency}ms`, inline: true },
-            );
+            // Embed
+            const embed = new EmbedBuilder()
+                .setTitle("🏓 ¡Pong!")
+                .setColor(0x00ff00)
+                .addFields(
+                    { name: "🤖 Latencia del Bot", value: `\`${latenciaBot}ms\``, inline: true },
+                    { name: "🌐 Latencia de la API", value: `\`${latenciaAPI}ms\``, inline: true },
+                )
+                .setTimestamp();
 
-            await InteractionHelper.safeEditReply(interaction, {
+            // Respuesta final
+            await interaction.editReply({
                 content: null,
                 embeds: [embed],
             });
+
         } catch (error) {
-            logger.error('Ping command error:', error);
-            try {
-                return await InteractionHelper.safeReply(interaction, {
-                    embeds: [createEmbed({ title: 'System Error', description: 'Could not determine latency at this time.', color: 'error' })],
+            console.error('Error en el comando ping:', error);
+
+            // Manejo de error
+            if (!interaction.replied) {
+                await interaction.reply({
+                    content: "❌ No se pudo medir la latencia en este momento.",
                     flags: MessageFlags.Ephemeral,
-                });
-            } catch (replyError) {
-                logger.error('Failed to send error reply:', replyError);
+                }).catch(() => {});
+            } else {
+                await interaction.editReply({
+                    content: "❌ No se pudo medir la latencia en este momento.",
+                }).catch(() => {});
             }
         }
     },
