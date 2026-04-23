@@ -6,9 +6,7 @@
 } from "discord.js";
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { createEmbed } from "../../utils/embeds.js";
-import {
-    createSelectMenu,
-} from "../../utils/components.js";
+import { createSelectMenu } from "../../utils/components.js";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -40,10 +38,6 @@ const CATEGORY_ICONS = {
     Config: "⚙️",
 };
 
-
-
-
-
 async function createInitialHelpMenu(client) {
     const commandsPath = path.join(__dirname, "../../commands");
     const categoryDirs = (
@@ -55,131 +49,93 @@ async function createInitialHelpMenu(client) {
 
     const options = [
         {
-            label: "📋 All Commands",
-            description: "View all available commands with pagination",
+            label: "📋 Todos los comandos",
+            description: "Ver todos los comandos disponibles",
             value: ALL_COMMANDS_ID,
         },
         ...categoryDirs.map((category) => {
             const categoryName =
                 category.charAt(0).toUpperCase() +
                 category.slice(1).toLowerCase();
+
             const icon = CATEGORY_ICONS[categoryName] || "🔍";
+
+            const translatedNames = {
+                Moderation: "Moderación",
+                Economy: "Economía",
+                Fun: "Diversión",
+                Leveling: "Niveles",
+                Utility: "Utilidades",
+                Ticket: "Tickets",
+                Welcome: "Bienvenida",
+                Giveaway: "Sorteos",
+                Counter: "Contador",
+                Tools: "Herramientas",
+                Search: "Búsqueda",
+                Reaction_roles: "Roles por Reacción",
+                Community: "Comunidad",
+                Birthday: "Cumpleaños",
+                Config: "Configuración",
+                Core: "General"
+            };
+
+            const displayName = translatedNames[categoryName] || categoryName;
+
             return {
-                label: `${icon} ${categoryName}`,
-                description: `View commands in the ${categoryName} category`,
+                label: `${icon} ${displayName}`,
+                description: `Ver comandos de ${displayName}`,
                 value: category,
             };
         }),
     ];
 
     const botName = client?.user?.username || "Bot";
-    const embed = createEmbed({ 
-        title: `🤖 ${botName} Help Center`,
-        description: "Your all-in-one Discord companion for moderation, economy, fun, and server management.",
+
+    const embed = createEmbed({
+        title: `🤖 Centro de Ayuda de ${botName}`,
+        description: "Tu compañero todo-en-uno para moderación, economía, diversión y gestión del servidor.",
         color: 'primary'
     });
 
     embed.addFields(
-        {
-            name: "🛡️ **Moderation**",
-            value: "Server moderation, user management, and enforcement tools",
-            inline: true
-        },
-        {
-            name: "💰 **Economy**",
-            value: "Currency system, shops, and virtual economy",
-            inline: true
-        },
-        {
-            name: "🎮 **Fun**",
-            value: "Games, entertainment, and interactive commands",
-            inline: true
-        },
-        {
-            name: "📊 **Leveling**",
-            value: "User levels, XP system, and progression tracking",
-            inline: true
-        },
-        {
-            name: "🎫 **Tickets**",
-            value: "Support ticket system for server management",
-            inline: true
-        },
-        {
-            name: "🎉 **Giveaways**",
-            value: "Automated giveaway management and distribution",
-            inline: true
-        },
-        {
-            name: "👋 **Welcome**",
-            value: "Member welcome messages and onboarding",
-            inline: true
-        },
-        {
-            name: "🎂 **Birthdays**",
-            value: "Birthday tracking and celebration features",
-            inline: true
-        },
-        {
-            name: "👥 **Community**",
-            value: "Community tools, applications, and member engagement",
-            inline: true
-        },
-        {
-            name: "⚙️ **Config**",
-            value: "Server and bot configuration management commands",
-            inline: true
-        },
-        {
-            name: "🔢 **Counter**",
-            value: "Live counter channel setup and counter controls",
-            inline: true
-        },
-        {
-            name: "🎙️ **Join to Create**",
-            value: "Dynamic voice channel creation and management",
-            inline: true
-        },
-        {
-            name: "🎭 **Reaction Roles**",
-            value: "Self-assignable roles using reaction-role systems",
-            inline: true
-        },
-        {
-            name: "✅ **Verification**",
-            value: "Member verification workflows and access gating",
-            inline: true
-        },
-        {
-            name: "🔧 **Utilities**",
-            value: "Useful tools and server utilities",
-            inline: true
-        }
+        { name: "🛡️ **Moderación**", value: "Herramientas de moderación y gestión de usuarios", inline: true },
+        { name: "💰 **Economía**", value: "Sistema de dinero, tiendas y economía virtual", inline: true },
+        { name: "🎮 **Diversión**", value: "Juegos y comandos interactivos", inline: true },
+        { name: "📊 **Niveles**", value: "Sistema de XP y progresión de usuarios", inline: true },
+        { name: "🎫 **Tickets**", value: "Sistema de soporte del servidor", inline: true },
+        { name: "🎉 **Sorteos**", value: "Gestión automática de sorteos", inline: true },
+        { name: "👋 **Bienvenida**", value: "Mensajes de bienvenida y onboarding", inline: true },
+        { name: "🎂 **Cumpleaños**", value: "Seguimiento y celebraciones", inline: true },
+        { name: "👥 **Comunidad**", value: "Herramientas de comunidad y participación", inline: true },
+        { name: "⚙️ **Configuración**", value: "Ajustes del bot y del servidor", inline: true },
+        { name: "🔢 **Contador**", value: "Canales de contador en vivo", inline: true },
+        { name: "🎙️ **Canales Dinámicos**", value: "Creación automática de canales de voz", inline: true },
+        { name: "🎭 **Roles por Reacción**", value: "Asignación automática de roles", inline: true },
+        { name: "✅ **Verificación**", value: "Sistema de verificación de usuarios", inline: true },
+        { name: "🔧 **Utilidades**", value: "Herramientas útiles del servidor", inline: true }
     );
 
-    embed.setFooter({ 
-        text: "Made with ❤️" 
-    });
+    embed.setFooter({ text: "Hecho con cariño por Azmitia <3" });
     embed.setTimestamp();
 
     const bugReportButton = new ButtonBuilder()
         .setCustomId(BUG_REPORT_BUTTON_ID)
-        .setLabel("Report Bug")
+        .setLabel("Reportar error")
         .setStyle(ButtonStyle.Danger);
 
     const supportButton = new ButtonBuilder()
-        .setLabel("Support Server")
+        .setLabel("Servidor de soporte")
         .setURL("https://discord.gg/QnWNz2dKCE")
         .setStyle(ButtonStyle.Link);
 
     const touchpointButton = new ButtonBuilder()
-        .setLabel("Learn from Touchpoint")
+        .setLabel("Aprender con Touchpoint")
         .setURL("https://www.youtube.com/@TouchDisc")
         .setStyle(ButtonStyle.Link);
 
     const selectRow = createSelectMenu(
         CATEGORY_SELECT_ID,
-        "Select to view the commands",
+        "Selecciona para ver los comandos",
         options,
     );
 
@@ -198,13 +154,11 @@ async function createInitialHelpMenu(client) {
 export default {
     data: new SlashCommandBuilder()
         .setName("help")
-        .setDescription("Displays the help menu with all available commands"),
+        .setDescription("Muestra el menú de ayuda con todos los comandos"),
 
     async execute(interaction, guildConfig, client) {
-        
-        const { MessageFlags } = await import('discord.js');
         await InteractionHelper.safeDefer(interaction);
-        
+
         const { embeds, components } = await createInitialHelpMenu(client);
 
         await InteractionHelper.safeEditReply(interaction, {
@@ -215,8 +169,8 @@ export default {
         setTimeout(async () => {
             try {
                 const closedEmbed = createEmbed({
-                    title: "Help menu closed",
-                    description: "Help menu has been closed, use /help again.",
+                    title: "Menú de ayuda cerrado",
+                    description: "El menú se ha cerrado, usa /help nuevamente.",
                     color: "secondary",
                 });
 
@@ -224,11 +178,7 @@ export default {
                     embeds: [closedEmbed],
                     components: [],
                 });
-            } catch (error) {
-                
-            }
+            } catch (error) {}
         }, HELP_MENU_TIMEOUT_MS);
     },
 };
-
-
