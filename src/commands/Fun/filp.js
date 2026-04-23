@@ -4,26 +4,27 @@ import { logger } from '../../utils/logger.js';
 import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
     .setName("flip")
-    .setDescription("Flips a coin (Heads or Tails)."),
+    .setDescription("Lanza una moneda (Cara o Cruz)."),
   category: 'Fun',
 
   async execute(interaction, config, client) {
     try {
-      const result = Math.random() < 0.5 ? "Heads" : "Tails";
-      const emoji = result === "Heads" ? "🪙" : "🔮";
+      const result = Math.random() < 0.5 ? "Cara" : "Cruz";
+      const emoji = result === "Cara" ? "🪙" : "🔮";
 
       const embed = successEmbed(
-        "Heads or Tails?",
-        `The coin landed on... **${result}** ${emoji}!`,
+        "¿Cara o Cruz?",
+        `La moneda cayó en... **${result}** ${emoji}!`,
       );
 
       await InteractionHelper.safeReply(interaction, { embeds: [embed] });
-      logger.debug(`Flip command executed by user ${interaction.user.id} in guild ${interaction.guildId}`);
+      logger.debug(`Comando flip ejecutado por el usuario ${interaction.user.id} en el servidor ${interaction.guildId}`);
     } catch (error) {
-      logger.error('Flip command error:', error);
+      logger.error('Error en el comando flip:', error);
       await handleInteractionError(interaction, error, {
         commandName: 'flip',
         source: 'flip_command'
@@ -31,6 +32,5 @@ export default {
     }
   },
 };
-
 
 
