@@ -5,6 +5,7 @@ import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/e
 import { sanitizeInput } from '../../utils/sanitization.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 function stringToHash(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -16,20 +17,20 @@ function stringToHash(str) {
 }
 
 export default {
-    data: new SlashCommandBuilder()
+  data: new SlashCommandBuilder()
     .setName("ship")
-    .setDescription("Calculate the compatibility score between two people.")
+    .setDescription("Calcula la compatibilidad entre dos personas.")
     .addStringOption((option) =>
       option
         .setName("name1")
-        .setDescription("The first name or user.")
+        .setDescription("El primer nombre o usuario.")
         .setRequired(true)
         .setMaxLength(100),
     )
     .addStringOption((option) =>
       option
         .setName("name2")
-        .setDescription("The second name or user.")
+        .setDescription("El segundo nombre o usuario.")
         .setRequired(true)
         .setMaxLength(100),
     ),
@@ -42,24 +43,21 @@ export default {
       const name1Raw = interaction.options.getString("name1");
       const name2Raw = interaction.options.getString("name2");
 
-      
       if (!name1Raw || name1Raw.trim().length === 0 || !name2Raw || name2Raw.trim().length === 0) {
         throw new TitanBotError(
-          'Empty names provided to ship command',
+          'Nombres vacíos en el comando ship',
           ErrorTypes.USER_INPUT,
-          'Please provide valid names for both people!'
+          '¡Por favor proporciona dos nombres válidos!'
         );
       }
 
-      
       const name1 = sanitizeInput(name1Raw.trim(), 100);
       const name2 = sanitizeInput(name2Raw.trim(), 100);
 
-      
       if (name1.toLowerCase() === name2.toLowerCase()) {
         const embed = warningEmbed(
           "💖 Ship Score",
-          `**${name1}** can't be shipped with themselves! Please choose two different people.`
+          `**${name1}** no puede ser emparejado consigo mismo. Elige dos personas diferentes.`
         );
         return await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
       }
@@ -70,17 +68,17 @@ export default {
 
       let description;
       if (score === 100) {
-        description = "Soulmates! It's destiny, they belong together!";
+        description = "¡Almas gemelas! El destino los unió.";
       } else if (score >= 80) {
-        description = "A perfect match! Get the wedding bells ready!";
+        description = "¡Pareja perfecta! Esto es amor real.";
       } else if (score >= 60) {
-        description = "Solid chemistry. Definitely worth exploring!";
+        description = "Buena química. Algo interesante puede surgir.";
       } else if (score >= 40) {
-        description = "Just friends status. Maybe with time?";
+        description = "Más amistad que romance, pero hay potencial.";
       } else if (score >= 20) {
-        description = "It's a struggle. They might need space.";
+        description = "Compatibilidad baja, podría ser complicado.";
       } else {
-        description = "Zero compatibility. Run for the hills!";
+        description = "No hay mucha conexión entre ellos.";
       }
 
       const progressBar =
@@ -89,11 +87,14 @@ export default {
 
       const embed = successEmbed(
         `💖 Ship Score: ${name1} vs ${name2}`,
-        `Compatibility: **${score}%**\n\n\`${progressBar}\`\n\n*${description}*`,
+        `Compatibilidad: **${score}%**\n\n\`${progressBar}\`\n\n*${description}*`,
       );
 
       await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
-      logger.debug(`Ship command executed by user ${interaction.user.id} in guild ${interaction.guildId}`);
+
+      logger.debug(
+        `Ship command executed by user ${interaction.user.id} in guild ${interaction.guildId}`
+      );
     } catch (error) {
       logger.error('Ship command error:', error);
       await handleInteractionError(interaction, error, {
