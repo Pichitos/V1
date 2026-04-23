@@ -1,43 +1,62 @@
-import { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, MessageFlags } from 'discord.js';
-import { createEmbed } from '../../utils/embeds.js';
-import { logger } from '../../utils/logger.js';
+import {
+    SlashCommandBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ActionRowBuilder,
+    EmbedBuilder,
+    MessageFlags,
+} from 'discord.js';
 
-import { InteractionHelper } from '../../utils/interactionHelper.js';
-const SUPPORT_SERVER_URL = "https://discord.gg/QnWNz2dKCE";
+const ENLACE_SOPORTE = "https://discord.gg/QnWNz2dKCE";
+
 export default {
     data: new SlashCommandBuilder()
-    .setName("support")
-    .setDescription("Get link to the support server"),
+        .setName("support")
+        .setDescription("Obtén el enlace al servidor de soporte"),
 
-  async execute(interaction) {
-    try {
-      const supportButton = new ButtonBuilder()
-        .setLabel("Join Support Server")
-        .setStyle(ButtonStyle.Link)
-        .setURL(SUPPORT_SERVER_URL);
+    async execute(interaction) {
+        try {
+            // Botón
+            const botonSoporte = new ButtonBuilder()
+                .setLabel("Unirse al servidor de soporte")
+                .setStyle(ButtonStyle.Link)
+                .setURL(ENLACE_SOPORTE);
 
-      const actionRow = new ActionRowBuilder().addComponents(supportButton);
+            const fila = new ActionRowBuilder().addComponents(botonSoporte);
 
-      await InteractionHelper.safeReply(interaction, {
-        embeds: [
-          createEmbed({ title: "🚑 Need Help?", description: "Join our official support server for assistance, report bugs, or suggest features. If you are customizing this bot, remember to change the link in the code!" }),
-        ],
-        components: [actionRow],
-        flags: MessageFlags.Ephemeral,
-      });
-    } catch (error) {
-      logger.error('Support command error:', error);
-      
-      try {
-        return await InteractionHelper.safeReply(interaction, {
-          embeds: [createEmbed({ title: 'System Error', description: 'Could not display support information.', color: 'error' })],
-          flags: MessageFlags.Ephemeral,
-        });
-      } catch (replyError) {
-        logger.error('Failed to send error reply:', replyError);
-      }
-    }
-  },
+            // Embed
+            const embed = new EmbedBuilder()
+                .setTitle("🚑 ¿Necesitas ayuda?")
+                .setDescription(
+                    "Únete a nuestro servidor oficial de soporte para recibir ayuda, reportar errores o sugerir nuevas funciones.\n\n" +
+                    "⚠️ Si estás personalizando este bot, recuerda cambiar el enlace en el código."
+                )
+                .setColor(0x3498db)
+                .setTimestamp();
+
+            // Respuesta
+            await interaction.reply({
+                embeds: [embed],
+                components: [fila],
+                flags: MessageFlags.Ephemeral,
+            });
+
+        } catch (error) {
+            console.error('Error en el comando support:', error);
+
+            // Manejo de error
+            if (!interaction.replied) {
+                await interaction.reply({
+                    content: "❌ No se pudo mostrar la información de soporte.",
+                    flags: MessageFlags.Ephemeral,
+                }).catch(() => {});
+            } else {
+                await interaction.editReply({
+                    content: "❌ No se pudo mostrar la información de soporte.",
+                }).catch(() => {});
+            }
+        }
+    },
 };
 
 
