@@ -11,18 +11,19 @@ import nextBirthdays from './modules/next_birthdays.js';
 import birthdaySetchannel from './modules/birthday_setchannel.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
         .setName('birthday')
-        .setDescription('Birthday system commands')
+        .setDescription('Comandos del sistema de cumpleaños')
         .addSubcommand(subcommand =>
             subcommand
                 .setName('set')
-                .setDescription('Set your birthday')
+                .setDescription('Establece tu cumpleaños')
                 .addIntegerOption(option =>
                     option
                         .setName('month')
-                        .setDescription('Birth month (1-12)')
+                        .setDescription('Mes de nacimiento (1-12)')
                         .setRequired(true)
                         .setMinValue(1)
                         .setMaxValue(12)
@@ -30,7 +31,7 @@ export default {
                 .addIntegerOption(option =>
                     option
                         .setName('day')
-                        .setDescription('Birth day (1-31)')
+                        .setDescription('Día de nacimiento (1-31)')
                         .setRequired(true)
                         .setMinValue(1)
                         .setMaxValue(31)
@@ -39,37 +40,37 @@ export default {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('info')
-                .setDescription('View birthday information')
+                .setDescription('Ver información de cumpleaños')
                 .addUserOption(option =>
                     option
                         .setName('user')
-                        .setDescription('User to check birthday for')
+                        .setDescription('Usuario para consultar su cumpleaños')
                         .setRequired(false)
                 )
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('list')
-                .setDescription('List all birthdays in the server')
+                .setDescription('Listar todos los cumpleaños del servidor')
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('remove')
-                .setDescription('Remove your birthday')
+                .setDescription('Eliminar tu cumpleaños')
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('next')
-                .setDescription('Show upcoming birthdays')
+                .setDescription('Mostrar próximos cumpleaños')
         )
         .addSubcommand(subcommand =>
             subcommand
                 .setName('setchannel')
-                .setDescription('Set or disable the channel for birthday announcements. (Manage Server required)')
+                .setDescription('Configura o desactiva el canal para anuncios de cumpleaños. (Requiere Administrar Servidor)')
                 .addChannelOption(option =>
                     option
                         .setName('channel')
-                        .setDescription('The text channel for announcements. Leave empty to disable.')
+                        .setDescription('El canal de texto para anuncios. Déjalo vacío para desactivar.')
                         .addChannelTypes(ChannelType.GuildText)
                         .setRequired(false)
                 )
@@ -94,12 +95,12 @@ export default {
                     return await birthdaySetchannel.execute(interaction, config, client);
                 default:
                     return InteractionHelper.safeReply(interaction, {
-                        embeds: [errorEmbed('Error', 'Unknown subcommand')],
+                        embeds: [errorEmbed('Error', 'Subcomando desconocido')],
                         flags: MessageFlags.Ephemeral
                     });
             }
         } catch (error) {
-            logger.error('Birthday command execution failed', {
+            logger.error('Falló la ejecución del comando de cumpleaños', {
                 error: error.message,
                 stack: error.stack,
                 userId: interaction.user.id,
@@ -114,5 +115,3 @@ export default {
         }
     }
 };
-
-
