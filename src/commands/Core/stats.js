@@ -1,47 +1,65 @@
-import { SlashCommandBuilder, version, MessageFlags } from 'discord.js';
-import { createEmbed } from '../../utils/embeds.js';
-import { logger } from '../../utils/logger.js';
+import {
+    SlashCommandBuilder,
+    EmbedBuilder,
+    version,
+    MessageFlags,
+} from 'discord.js';
 
-import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
-    .setName("stats")
-    .setDescription("View bot statistics"),
+        .setName("stats")
+        .setDescription("Ver estadísticas del bot"),
 
-  async execute(interaction) {
-    try {
-      await InteractionHelper.safeDefer(interaction);
-      
-      const totalGuilds = interaction.client.guilds.cache.size;
-      const totalMembers = interaction.client.guilds.cache.reduce(
-        (acc, guild) => acc + guild.memberCount,
-        0,
-      );
-      const nodeVersion = process.version;
+    async execute(interaction) {
+        try {
+            // Evita que la interacción expire
+            await interaction.deferReply();
 
-      const embed = createEmbed({ title: "📊 System Statistics", description: "Real-time performance metrics." }).addFields(
-        { name: "Servers", value: `${totalGuilds}`, inline: true },
-        { name: "Users", value: `${totalMembers}`, inline: true },
-        { name: "Node.js", value: `${nodeVersion}`, inline: true },
-        { name: "Discord.js", value: `v${version}`, inline: true },
-        {
-          name: "Memory Usage",
-          value: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`,
-          inline: true,
-        },
-      );
+            // Datos del bot
+            const totalServidores = interaction.client.guilds.cache.size;
+            const totalUsuarios = interaction.client.guilds.cache.reduce(
+                (acc, guild) => acc + guild.memberCount,
+                0,
+            );
+            const versionNode = process.version;
+            const usoMemoria = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
 
-      await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
-    } catch (error) {
-      logger.error('Stats command error:', error);
-      return InteractionHelper.safeEditReply(interaction, {
-        embeds: [createEmbed({ title: 'System Error', description: 'Could not fetch system statistics.', color: 'error' })],
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-  },
+            // Embed
+            const embed = new EmbedBuilder()
+                .setTitle("📊 Estadísticas del Sistema")
+                .setDescription("Métricas en tiempo real del bot.")
+                .setColor(0x3498db)
+                .addFields(
+                    { name: "🌐 Servidores", value: `\`${totalServidores}\``, inline: true },
+                    { name: "👥 Usuarios", value: `\`${totalUsuarios}\``, inline: true },
+                    { name: "🟢 Node.js", value: `\`${versionNode}\``, inline: true },
+                    { name: "📦 Discord.js", value: `\`v${version}\``, inline: true },
+                    { name: "💾 Uso de Memoria", value: `\`${usoMemoria} MB\``, inline: true },
+                )
+                .setTimestamp();
+
+            // Respuesta
+            await interaction.editReply({
+                embeds: [embed],
+            });
+
+        } catch (error) {
+            console.error('Error en el comando stats:', error);
+
+            // Manejo de error
+            if (!interaction.replied) {
+                await interaction.reply({
+                    content: "❌ No se pudieron obtener las estadísticas.",
+                    flags: MessageFlags.Ephemeral,
+                }).catch(() => {});
+            } else {
+                await interaction.editReply({
+                    content: "❌ No se pudieron obtener las estadísticas.",
+                }).catch(() => {});
+            }
+        }
+    },
 };
-
 
 
 
