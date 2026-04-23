@@ -5,14 +5,15 @@ import { handleInteractionError, TitanBotError, ErrorTypes } from '../../utils/e
 import { sanitizeInput } from '../../utils/sanitization.js';
 
 import { InteractionHelper } from '../../utils/interactionHelper.js';
+
 export default {
     data: new SlashCommandBuilder()
     .setName("reverse")
-    .setDescription("Writes your text backwards.")
+    .setDescription("Escribe tu texto al revés.")
     .addStringOption((option) =>
       option
         .setName("text")
-        .setDescription("The text to reverse.")
+        .setDescription("El texto que quieres invertir.")
         .setRequired(true)
         .setMaxLength(1000),
     ),
@@ -27,7 +28,7 @@ export default {
         throw new TitanBotError(
           'Empty text provided to reverse command',
           ErrorTypes.USER_INPUT,
-          'Please provide some text to reverse!'
+          '¡Por favor proporciona un texto para invertir!'
         );
       }
 
@@ -36,14 +37,14 @@ export default {
       const reversedText = sanitizedText.split("").reverse().join("");
 
       const embed = successEmbed(
-        "Backwards Text",
-        `Original: **${sanitizedText}**\nReversed: **${reversedText}**`,
+        "Texto al revés",
+        `Original: **${sanitizedText}**\nInvertido: **${reversedText}**`,
       );
 
       await InteractionHelper.safeReply(interaction, { embeds: [embed] });
-      logger.debug(`Reverse command executed by user ${interaction.user.id} in guild ${interaction.guildId}`);
+      logger.debug(`Comando reverse ejecutado por el usuario ${interaction.user.id} en el servidor ${interaction.guildId}`);
     } catch (error) {
-      logger.error('Reverse command error:', error);
+      logger.error('Error en el comando reverse:', error);
       await handleInteractionError(interaction, error, {
         commandName: 'reverse',
         source: 'reverse_command'
