@@ -8,11 +8,11 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('withdraw')
-        .setDescription('Withdraw money from your bank to your wallet')
+        .setDescription('Retira dinero de tu banco a tu billetera')
         .addIntegerOption(option =>
             option
                 .setName('amount')
-                .setDescription('Amount to withdraw')
+                .setDescription('Cantidad a retirar')
                 .setRequired(true)
                 .setMinValue(1)
         ),
@@ -30,7 +30,7 @@ export default {
                 throw createError(
                     "Failed to load economy data",
                     ErrorTypes.DATABASE,
-                    "Failed to load your economy data. Please try again later.",
+                    "No se pudieron cargar tus datos de economía. Inténtalo de nuevo más tarde.",
                     { userId, guildId }
                 );
             }
@@ -41,7 +41,7 @@ export default {
                 throw createError(
                     "Invalid withdrawal amount",
                     ErrorTypes.VALIDATION,
-                    "You must withdraw a positive amount.",
+                    "Debes retirar una cantidad positiva.",
                     { amount: withdrawAmount, userId }
                 );
             }
@@ -54,7 +54,7 @@ export default {
                 throw createError(
                     "Empty bank account",
                     ErrorTypes.VALIDATION,
-                    "Your bank account is empty.",
+                    "Tu cuenta bancaria está vacía.",
                     { userId, bankBalance: userData.bank }
                 );
             }
@@ -66,16 +66,16 @@ export default {
 
             const embed = MessageTemplates.SUCCESS.DATA_UPDATED(
                 "withdrawal",
-                `You successfully withdrew **$${withdrawAmount.toLocaleString()}** from your bank.`
+                `Has retirado con éxito **$${withdrawAmount.toLocaleString()}** de tu banco.`
             )
                 .addFields(
                     {
-                        name: "💵 New Cash Balance",
+                        name: "💵 Nuevo saldo en efectivo",
                         value: `$${userData.wallet.toLocaleString()}`,
                         inline: true,
                     },
                     {
-                        name: "🏦 New Bank Balance",
+                        name: "🏦 Nuevo saldo bancario",
                         value: `$${userData.bank.toLocaleString()}`,
                         inline: true,
                     },
