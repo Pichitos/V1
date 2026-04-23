@@ -5,6 +5,7 @@ import { logger } from '../../../utils/logger.js';
 import { handleInteractionError } from '../../../utils/errorHandler.js';
 
 import { InteractionHelper } from '../../../utils/interactionHelper.js';
+
 export default {
     async execute(interaction, config, client) {
         try {
@@ -19,21 +20,21 @@ export default {
             if (result.success) {
                 await InteractionHelper.safeEditReply(interaction, {
                     embeds: [successEmbed(
-                        "Your birthday has been successfully removed from the server.",
-                        "Birthday Removed 🗑️"
+                        "Tu cumpleaños ha sido eliminado correctamente del servidor.",
+                        "Cumpleaños eliminado 🗑️"
                     )]
                 });
             } else if (result.notFound) {
                 await InteractionHelper.safeEditReply(interaction, {
                     embeds: [createEmbed({
-                        title: '❌ No Birthday Found',
-                        description: "You don't have a birthday set to remove.",
+                        title: '❌ No se encontró cumpleaños',
+                        description: "No tienes un cumpleaños establecido para eliminar.",
                         color: 'error'
                     })]
                 });
             }
         } catch (error) {
-            logger.error("Birthday remove command execution failed", {
+            logger.error("Falló la ejecución del comando de eliminar cumpleaños", {
                 error: error.message,
                 stack: error.stack,
                 userId: interaction.user.id,
