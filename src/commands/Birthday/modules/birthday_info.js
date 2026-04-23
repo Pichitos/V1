@@ -5,6 +5,7 @@ import { logger } from '../../../utils/logger.js';
 import { handleInteractionError } from '../../../utils/errorHandler.js';
 
 import { InteractionHelper } from '../../../utils/interactionHelper.js';
+
 export default {
     async execute(interaction, config, client) {
         try {
@@ -20,32 +21,32 @@ export default {
             if (!birthdayData) {
                 return await InteractionHelper.safeEditReply(interaction, {
                     embeds: [createEmbed({
-                        title: '❌ No Birthday Found',
+                        title: '❌ No se encontró cumpleaños',
                         description: targetUser.id === interaction.user.id 
-                            ? "You haven't set your birthday yet. Use `/birthday set` to add it!"
-                            : `${targetUser.username} hasn't set their birthday yet.`,
+                            ? "Aún no has establecido tu cumpleaños. ¡Usa `/birthday set` para agregarlo!"
+                            : `${targetUser.username} aún no ha establecido su cumpleaños.`,
                         color: 'error'
                     })]
                 });
             }
             
             const embed = createEmbed({
-                title: "🎂 Birthday Information",
-                description: `**Date:** ${birthdayData.monthName} ${birthdayData.day}\n**User:** ${targetUser.toString()}`,
+                title: "🎂 Información de cumpleaños",
+                description: `**Fecha:** ${birthdayData.monthName} ${birthdayData.day}\n**Usuario:** ${targetUser.toString()}`,
                 color: 'info',
-                footer: targetUser.id === interaction.user.id ? "Your Birthday" : `${targetUser.username}'s Birthday`
+                footer: targetUser.id === interaction.user.id ? "Tu cumpleaños" : `Cumpleaños de ${targetUser.username}`
             });
             
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
             
-            logger.info('Birthday info retrieved successfully', {
+            logger.info('Información de cumpleaños obtenida correctamente', {
                 userId: interaction.user.id,
                 targetUserId: targetUser.id,
                 guildId,
                 commandName: 'birthday_info'
             });
         } catch (error) {
-            logger.error("Birthday info command execution failed", {
+            logger.error("Falló la ejecución del comando de información de cumpleaños", {
                 error: error.message,
                 stack: error.stack,
                 userId: interaction.user.id,
@@ -59,6 +60,5 @@ export default {
         }
     }
 };
-
 
 
