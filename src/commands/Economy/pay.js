@@ -10,17 +10,17 @@ import EconomyService from '../../services/economyService.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('pay')
-        .setDescription('Pay another user some of your cash')
+        .setDescription('Pagarle a otro usuario parte de tu dinero en efectivo')
         .addUserOption(option =>
             option
                 .setName('user')
-                .setDescription('User to pay')
+                .setDescription('Usuario al que pagar')
                 .setRequired(true)
         )
         .addIntegerOption(option =>
             option
                 .setName('amount')
-                .setDescription('Amount to pay')
+                .setDescription('Cantidad a pagar')
                 .setRequired(true)
                 .setMinValue(1)
         ),
@@ -34,7 +34,7 @@ export default {
             const amount = interaction.options.getInteger("amount");
             const guildId = interaction.guildId;
 
-            logger.debug(`[ECONOMY] Pay command initiated`, { 
+            logger.debug(`[ECONOMY] Comando pay iniciado`, { 
                 senderId, 
                 receiverId: receiver.id,
                 amount,
@@ -45,7 +45,7 @@ export default {
                 throw createError(
                     "Cannot pay bot",
                     ErrorTypes.VALIDATION,
-                    "You cannot pay a bot.",
+                    "No puedes pagarle a un bot.",
                     { receiverId: receiver.id, isBot: true }
                 );
             }
@@ -54,7 +54,7 @@ export default {
                 throw createError(
                     "Cannot pay self",
                     ErrorTypes.VALIDATION,
-                    "You cannot pay yourself.",
+                    "No puedes pagarte a ti mismo.",
                     { senderId, receiverId: receiver.id }
                 );
             }
@@ -63,7 +63,7 @@ export default {
                 throw createError(
                     "Invalid payment amount",
                     ErrorTypes.VALIDATION,
-                    "Amount must be greater than zero.",
+                    "La cantidad debe ser mayor a cero.",
                     { amount, senderId }
                 );
             }
@@ -77,7 +77,7 @@ export default {
                 throw createError(
                     "Failed to load sender economy data",
                     ErrorTypes.DATABASE,
-                    "Failed to load your economy data. Please try again later.",
+                    "No se pudieron cargar tus datos de economía. Inténtalo de nuevo más tarde.",
                     { userId: senderId, guildId }
                 );
             }
@@ -86,13 +86,11 @@ export default {
                 throw createError(
                     "Failed to load receiver economy data",
                     ErrorTypes.DATABASE,
-                    "Failed to load the receiver's economy data. Please try again later.",
+                    "No se pudieron cargar los datos de economía del receptor. Inténtalo de nuevo más tarde.",
                     { userId: receiver.id, guildId }
                 );
             }
 
-            
-            
             const result = await EconomyService.transferMoney(
                 client, 
                 guildId, 
@@ -101,34 +99,33 @@ export default {
                 amount
             );
 
-            
             const updatedSenderData = await getEconomyData(client, guildId, senderId);
             const updatedReceiverData = await getEconomyData(client, guildId, receiver.id);
 
             const embed = MessageTemplates.SUCCESS.DATA_UPDATED(
                 "payment",
-                `You successfully paid **${receiver.username}** the amount of **$${amount.toLocaleString()}**!`
+                `Has pagado con éxito a **${receiver.username}** la cantidad de **$${amount.toLocaleString()}**!`
             )
                 .addFields(
                     {
-                        name: "💳 Payment Amount",
+                        name: "💳 Cantidad pagada",
                         value: `$${amount.toLocaleString()}`,
                         inline: true,
                     },
                     {
-                        name: "💵 Your New Balance",
+                        name: "💵 Tu nuevo saldo",
                         value: `$${updatedSenderData.wallet.toLocaleString()}`,
                         inline: true,
                     },
                 )
                 .setFooter({
-                    text: `Paid to ${receiver.tag}`,
+                    text: `Pagado a ${receiver.tag}`,
                     iconURL: receiver.displayAvatarURL(),
                 });
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
 
-            logger.info(`[ECONOMY] Payment sent successfully`, {
+            logger.info(`[ECONOMY] Pago enviado exitosamente`, {
                 senderId,
                 receiverId: receiver.id,
                 amount,
@@ -138,20 +135,19 @@ export default {
 
             try {
                 const receiverEmbed = createEmbed({ 
-                    title: "💰 Incoming Payment!", 
-                    description: `${interaction.user.username} paid you **$${amount.toLocaleString()}**.` 
+                    title: "💰 ¡Pago recibido!", 
+                    description: `${interaction.user.username} te pagó **$${amount.toLocaleString()}**.` 
                 }).addFields({
-                    name: "Your New Cash",
+                    name: "Tu nuevo saldo",
                     value: `$${updatedReceiverData.wallet.toLocaleString()}`,
                     inline: true,
                 });
                 await receiver.send({ embeds: [receiverEmbed] });
             } catch (e) {
-                    logger.warn(`Could not DM user ${receiver.id}: ${e.message}`);
+                logger.warn(`No se pudo enviar DM al usuario ${receiver.id}: ${e.message}`);
             }
     }, { command: 'pay' })
 };
-
 
 
 
