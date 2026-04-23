@@ -1,103 +1,96 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { createEmbed, errorEmbed, successEmbed, infoEmbed, warningEmbed } from '../../utils/embeds.js';
-import { getEconomyData, setEconomyData } from '../../utils/economy.js';
-import { botConfig } from '../../config/bot.js';
+import { createEmbed } from '../../utils/embeds.js';
+import { getEconomyData, saveEconomyData } from '../../utils/economy.js';
 import { withErrorHandling, createError, ErrorTypes } from '../../utils/errorHandler.js';
-import { MessageTemplates } from '../../utils/messageTemplates.js';
+import { logger } from '../../utils/logger.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 
-const COOLDOWN = 30 * 60 * 1000;
-const MIN_WIN = 50;
-const MAX_WIN = 200;
-const SUCCESS_CHANCE = 0.7;
+// 🔒 ID del rol permitido
+const ALLOWED_ROLE_ID = '1495143740703244368';
 
 export default {
     data: new SlashCommandBuilder()
-        .setName('beg')
-        .setDescription('Beg for a small amount of money'),
+        .setName('add-money')
+        .setDescription('Añadir dinero a un usuario')
+        .addUserOption(option =>
+            option
+                .setName('user')
+                .setDescription('Usuario al que quieres añadir dinero')
+                .setRequired(true)
+        )
+        .addIntegerOption(option =>
+            option
+                .setName('amount')
+                .setDescription('Cantidad de dinero a añadir')
+                .setRequired(true)
+        ),
 
     execute: withErrorHandling(async (interaction, config, client) => {
         const deferred = await InteractionHelper.safeDefer(interaction);
         if (!deferred) return;
-            
-            const userId = interaction.user.id;
-            const guildId = interaction.guildId;
 
-            let userData = await getEconomyData(client, guildId, userId);
-            
-            if (!userData) {
-                throw createError(
-                    "Failed to load economy data",
-                    ErrorTypes.DATABASE,
-                    "Failed to load your economy data. Please try again later.",
-                    { userId, guildId }
-                );
+        const member = interaction.member;
+
+        // 🔒 Verificación de rol
+        if (!member.roles.cache.has(ALLOWED_ROLE_ID)) {
+            throw createError(
+                "Acceso denegado",
+                ErrorTypes.PERMISSION,
+                "No tienes el rol necesario para usar este comando."
+            );
+        }
+
+        const targetUser = interaction.options.getUser('user');
+        const amount = interaction.options.getInteger('amount');
+        const guildId = interaction.guildId;
+
+        logger.debug(`[ECONOMÍA] Añadir dinero a ${targetUser.id}`, { amount, guildId });
+
+        if (targetUser.bot) {
+            throw createError(
+                "Intento de modificar saldo de un bot",
+                ErrorTypes.VALIDATION,
+                "No puedes añadir dinero a bots."
+            );
+        }
+
+        if (amount <= 0) {
+            throw createError(
+                "Cantidad inválida",
+                ErrorTypes.VALIDATION,
+                "Debes introducir una cantidad mayor a 0."
+            );
+        }
+
+        const userData = await getEconomyData(client, guildId, targetUser.id);
+
+        if (!userData) {
+            throw createError(
+                "Error al cargar datos",
+                ErrorTypes.DATABASE,
+                "No se pudieron cargar los datos del usuario."
+            );
+        }
+
+        userData.wallet = (userData.wallet || 0) + amount;
+
+        await saveEconomyData(client, guildId, targetUser.id, userData);
+
+        logger.info(`[ECONOMÍA] Dinero añadido`, { userId: targetUser.id, amount });
+
+        const embed = createEmbed({
+            title: "💰 Dinero añadido",
+            description: `Se añadieron **$${amount.toLocaleString()}** a ${targetUser.username}.`,
+        }).addFields(
+            {
+                name: "💵 Nuevo efectivo",
+                value: `$${userData.wallet.toLocaleString()}`,
+                inline: true,
             }
+        );
 
-            const lastBeg = userData.lastBeg || 0;
-            const remainingTime = lastBeg + COOLDOWN - Date.now();
-
-            if (remainingTime > 0) {
-                const minutes = Math.floor(remainingTime / 60000);
-                const seconds = Math.floor((remainingTime % 60000) / 1000);
-
-                let timeMessage =
-                    minutes > 0 ? `${minutes} minute(s)` : `${seconds} second(s)`;
-
-                throw createError(
-                    "Beg cooldown active",
-                    ErrorTypes.RATE_LIMIT,
-                    `You are tired from begging! Try again in **${timeMessage}**.`,
-                    { remainingTime, minutes, seconds, cooldownType: 'beg' }
-                );
-            }
-
-            const success = Math.random() < SUCCESS_CHANCE;
-
-            let replyEmbed;
-            let newCash = userData.wallet;
-
-            if (success) {
-                const amountWon =
-                    Math.floor(Math.random() * (MAX_WIN - MIN_WIN + 1)) + MIN_WIN;
-
-                newCash += amountWon;
-
-                const successMessages = [
-                    `A kind stranger drops **$${amountWon.toLocaleString()}** into your cup.`,
-                    `You spotted an unattended wallet! You grab **$${amountWon.toLocaleString()}** and run.`,
-                    `Someone took pity on you and gave you **$${amountWon.toLocaleString()}**!`,
-                    `You found **$${amountWon.toLocaleString()}** under a park bench.`,
-                ];
-
-                replyEmbed = MessageTemplates.SUCCESS.DATA_UPDATED(
-                    "begging",
-                    successMessages[
-                        Math.floor(Math.random() * successMessages.length)
-                    ]
-                );
-            } else {
-                const failMessages = [
-                    "The police chased you off. You got nothing.",
-                    "Someone yelled, 'Get a job!' and walked past.",
-                    "A squirrel stole the single coin you had.",
-                    "You tried to beg, but you were too embarrassed and gave up.",
-                ];
-
-                replyEmbed = MessageTemplates.ERRORS.INSUFFICIENT_FUNDS(
-                    "nothing",
-                    "You failed to get any money from begging."
-                );
-                replyEmbed.data.description = failMessages[Math.floor(Math.random() * failMessages.length)];
-            }
-
-            userData.wallet = newCash;
-userData.lastBeg = Date.now();
-
-            await setEconomyData(client, guildId, userId, userData);
-
-            await InteractionHelper.safeEditReply(interaction, { embeds: [replyEmbed] });
-    }, { command: 'beg' })
+        await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
+    }, { command: 'add-money' })
 };
 
 
