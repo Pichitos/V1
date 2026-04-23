@@ -8,11 +8,11 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('balance')
-        .setDescription("Check your or someone else's balance")
+        .setDescription("Ver tu saldo o el de otro usuario")
         .addUserOption(option =>
             option
                 .setName('user')
-                .setDescription('User to check balance for')
+                .setDescription('Usuario al que quieres ver el saldo')
                 .setRequired(false)
         ),
 
@@ -23,13 +23,13 @@ export default {
             const targetUser = interaction.options.getUser("user") || interaction.user;
             const guildId = interaction.guildId;
 
-            logger.debug(`[ECONOMY] Balance check for ${targetUser.id}`, { userId: targetUser.id, guildId });
+            logger.debug(`[ECONOMÍA] Consulta de saldo para ${targetUser.id}`, { userId: targetUser.id, guildId });
 
             if (targetUser.bot) {
                 throw createError(
-                    "Bot user queried for balance",
+                    "Se intentó consultar el saldo de un bot",
                     ErrorTypes.VALIDATION,
-                    "Bots don't have an economy balance."
+                    "Los bots no tienen saldo en la economía."
                 );
             }
 
@@ -37,9 +37,9 @@ export default {
             
             if (!userData) {
                 throw createError(
-                    "Failed to load economy data",
+                    "Error al cargar datos de economía",
                     ErrorTypes.DATABASE,
-                    "Failed to load economy data. Please try again later.",
+                    "No se pudieron cargar los datos de economía. Intenta más tarde.",
                     { userId: targetUser.id, guildId }
                 );
             }
@@ -50,17 +50,17 @@ export default {
             const bank = typeof userData.bank === 'number' ? userData.bank : 0;
 
             const embed = createEmbed({
-                title: `💰 ${targetUser.username}'s Balance`,
-                description: `Here is the current financial status for ${targetUser.username}.`,
+                title: `💰 Saldo de ${targetUser.username}`,
+                description: `Este es el estado financiero actual de ${targetUser.username}.`,
             })
                 .addFields(
                     {
-                        name: "💵 Cash",
+                        name: "💵 Efectivo",
                         value: `$${wallet.toLocaleString()}`,
                         inline: true,
                     },
                     {
-                        name: "🏦 Bank",
+                        name: "🏦 Banco",
                         value: `$${bank.toLocaleString()} / $${maxBank.toLocaleString()}`,
                         inline: true,
                     },
@@ -71,16 +71,15 @@ export default {
                     }
                 )
                 .setFooter({
-                    text: `Requested by ${interaction.user.tag}`,
+                    text: `Solicitado por ${interaction.user.tag}`,
                     iconURL: interaction.user.displayAvatarURL(),
                 });
 
-            logger.info(`[ECONOMY] Balance retrieved`, { userId: targetUser.id, wallet, bank });
+            logger.info(`[ECONOMÍA] Saldo obtenido`, { userId: targetUser.id, wallet, bank });
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
     }, { command: 'balance' })
 };
-
 
 
 
