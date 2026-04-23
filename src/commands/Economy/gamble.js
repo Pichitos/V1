@@ -14,11 +14,11 @@ const GAMBLE_COOLDOWN = 5 * 60 * 1000;
 export default {
     data: new SlashCommandBuilder()
         .setName('gamble')
-        .setDescription('Gamble your money for a chance to win more')
+        .setDescription('Apuesta tu dinero para tener una oportunidad de ganar más')
         .addIntegerOption(option =>
             option
                 .setName('amount')
-                .setDescription('Amount of cash to gamble')
+                .setDescription('Cantidad de dinero a apostar')
                 .setRequired(true)
                 .setMinValue(1)
         ),
@@ -45,7 +45,7 @@ export default {
                 throw createError(
                     "Gamble cooldown active",
                     ErrorTypes.RATE_LIMIT,
-                    `You need to cool down before gambling again. Wait **${minutes}m ${seconds}s**.`,
+                    `Debes esperar antes de volver a apostar. Espera **${minutes}m ${seconds}s**.`,
                     { remaining, cooldownType: 'gamble' }
                 );
             }
@@ -54,7 +54,7 @@ export default {
                 throw createError(
                     "Insufficient cash for gamble",
                     ErrorTypes.VALIDATION,
-                    `You only have $${userData.wallet.toLocaleString()} cash, but you are trying to bet $${betAmount.toLocaleString()}.`,
+                    `Solo tienes $${userData.wallet.toLocaleString()} en efectivo, pero intentas apostar $${betAmount.toLocaleString()}.`,
                     { required: betAmount, current: userData.wallet }
                 );
             }
@@ -64,18 +64,16 @@ export default {
             let usedClover = false;
             let usedCharm = false;
 
-            
             if (cloverCount > 0) {
                 winChance += CLOVER_WIN_BONUS;
                 userData.inventory["lucky_clover"] -= 1;
-                cloverMessage = `\n🍀 **Lucky Clover Consumed:** Your win chance was boosted!`;
+                cloverMessage = `\n🍀 **Trébol de la suerte consumido:** ¡Tu probabilidad de ganar aumentó!`;
                 usedClover = true;
             }
-            
             else if (charmCount > 0) {
                 winChance += CHARM_WIN_BONUS;
                 userData.inventory["lucky_charm"] -= 1;
-                cloverMessage = `\n🍀 **Lucky Charm Used (${charmCount - 1} uses remaining):** Your win chance was boosted!`;
+                cloverMessage = `\n🍀 **Amuleto de la suerte usado (${charmCount - 1} usos restantes):** ¡Tu probabilidad de ganar aumentó!`;
                 usedCharm = true;
             }
 
@@ -85,45 +83,45 @@ export default {
 
             if (win) {
                 const amountWon = Math.floor(betAmount * PAYOUT_MULTIPLIER);
-cashChange = amountWon;
+                cashChange = amountWon;
 
                 resultEmbed = successEmbed(
-                    "🎉 You Won!",
-                    `You successfully gambled and turned your **$${betAmount.toLocaleString()}** bet into **$${amountWon.toLocaleString()}**!${cloverMessage}`,
+                    "🎉 ¡Ganaste!",
+                    `Has apostado con éxito y convertiste tu apuesta de **$${betAmount.toLocaleString()}** en **$${amountWon.toLocaleString()}**!${cloverMessage}`,
                 );
             } else {
-cashChange = -betAmount;
+                cashChange = -betAmount;
 
                 resultEmbed = errorEmbed(
-                    "💔 You Lost...",
-                    `The dice rolled against you. You lost your **$${betAmount.toLocaleString()}** bet.`,
+                    "💔 Perdiste...",
+                    `La suerte no estuvo de tu lado. Perdiste tu apuesta de **$${betAmount.toLocaleString()}**.`,
                 );
             }
 
             userData.wallet = (userData.wallet || 0) + cashChange;
-userData.lastGamble = now;
+            userData.lastGamble = now;
 
             await setEconomyData(client, guildId, userId, userData);
 
             const newCash = userData.wallet;
 
             resultEmbed.addFields({
-                name: "💵 New Cash Balance",
+                name: "💵 Nuevo saldo en efectivo",
                 value: `$${newCash.toLocaleString()}`,
                 inline: true,
             });
 
             if (usedClover) {
                 resultEmbed.setFooter({
-                    text: `You have ${userData.inventory["lucky_clover"]} Lucky Clovers left. Win chance was ${Math.round(winChance * 100)}%.`,
+                    text: `Te quedan ${userData.inventory["lucky_clover"]} tréboles de la suerte. Probabilidad de ganar: ${Math.round(winChance * 100)}%.`,
                 });
             } else if (usedCharm) {
                 resultEmbed.setFooter({
-                    text: `You have ${userData.inventory["lucky_charm"]} Lucky Charm uses left. Win chance was ${Math.round(winChance * 100)}%.`,
+                    text: `Te quedan ${userData.inventory["lucky_charm"]} usos de amuleto de la suerte. Probabilidad de ganar: ${Math.round(winChance * 100)}%.`,
                 });
             } else {
                 resultEmbed.setFooter({
-                    text: `Next gamble available in 5 minutes. Base win chance: ${Math.round(BASE_WIN_CHANCE * 100)}%.`,
+                    text: `Podrás volver a apostar en 5 minutos. Probabilidad base de ganar: ${Math.round(BASE_WIN_CHANCE * 100)}%.`,
                 });
             }
 
