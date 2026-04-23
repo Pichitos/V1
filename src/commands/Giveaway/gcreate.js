@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, PermissionsBitField, ChannelType, MessageFlags } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits, ChannelType, MessageFlags } from 'discord.js';
 import { errorEmbed, successEmbed } from '../../utils/embeds.js';
 import { logger } from '../../utils/logger.js';
 import { TitanBotError, ErrorTypes, handleInteractionError } from '../../utils/errorHandler.js';
@@ -16,19 +16,17 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("gcreate")
-        .setDescription("Starts a new giveaway in a specified channel.")
+        .setDescription("Inicia un nuevo sorteo en un canal especificado.")
         .addStringOption((option) =>
             option
                 .setName("duration")
-                .setDescription(
-                    "How long the giveaway should last (e.g., 1h, 30m, 5d).",
-                )
+                .setDescription("Duración del sorteo (ej: 1h, 30m, 5d).")
                 .setRequired(true),
         )
         .addIntegerOption((option) =>
             option
                 .setName("winners")
-                .setDescription("The number of winners to pick.")
+                .setDescription("Número de ganadores.")
                 .setMinValue(1)
                 .setMaxValue(10)
                 .setRequired(true),
@@ -36,13 +34,13 @@ export default {
         .addStringOption((option) =>
             option
                 .setName("prize")
-                .setDescription("The prize being given away.")
+                .setDescription("Premio del sorteo.")
                 .setRequired(true),
         )
         .addChannelOption((option) =>
             option
                 .setName("channel")
-                .setDescription("The channel to send the giveaway to (defaults to current channel).")
+                .setDescription("Canal donde se enviará el sorteo (por defecto: este canal).")
                 .addChannelTypes(ChannelType.GuildText)
                 .setRequired(false),
         )
@@ -50,52 +48,46 @@ export default {
 
     async execute(interaction) {
         try {
-            
             if (!interaction.inGuild()) {
                 throw new TitanBotError(
-                    'Giveaway command used outside guild',
+                    'Giveaway usado fuera de servidor',
                     ErrorTypes.VALIDATION,
-                    'This command can only be used in a server.',
+                    'Este comando solo puede usarse en un servidor.',
                     { userId: interaction.user.id }
                 );
             }
 
-            
             if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
                 throw new TitanBotError(
-                    'User lacks ManageGuild permission',
+                    'Sin permisos para giveaway',
                     ErrorTypes.PERMISSION,
-                    "You need the 'Manage Server' permission to start a giveaway.",
+                    "Necesitas el permiso de 'Administrar servidor' para crear sorteos.",
                     { userId: interaction.user.id, guildId: interaction.guildId }
                 );
             }
 
             logger.info(`Giveaway creation started by ${interaction.user.tag} in guild ${interaction.guildId}`);
 
-            
             const durationString = interaction.options.getString("duration");
             const winnerCount = interaction.options.getInteger("winners");
             const prize = interaction.options.getString("prize");
             const targetChannel = interaction.options.getChannel("channel") || interaction.channel;
 
-            
             const durationMs = parseDuration(durationString);
             validateWinnerCount(winnerCount);
             const prizeName = validatePrize(prize);
 
-            
             if (!targetChannel.isTextBased()) {
                 throw new TitanBotError(
-                    'Target channel is not text-based',
+                    'Canal no válido para giveaway',
                     ErrorTypes.VALIDATION,
-                    'The channel must be a text channel.',
+                    'El canal debe ser un canal de texto.',
                     { channelId: targetChannel.id, channelType: targetChannel.type }
                 );
             }
 
             const endTime = Date.now() + durationMs;
 
-            
             const initialGiveawayData = {
                 messageId: "placeholder",
                 channelId: targetChannel.id,
@@ -111,19 +103,17 @@ export default {
                 createdAt: new Date().toISOString()
             };
 
-            
             const embed = createGiveawayEmbed(initialGiveawayData, "active");
             const row = createGiveawayButtons(false);
-            
-            
+
             const giveawayMessage = await targetChannel.send({
-                content: "🎉 **NEW GIVEAWAY** 🎉",
+                content: "🎉 **NUEVO SORTEO** 🎉",
                 embeds: [embed],
                 components: [row],
             });
 
-            
             initialGiveawayData.messageId = giveawayMessage.id;
+
             const saved = await saveGiveaway(
                 interaction.client,
                 interaction.guildId,
@@ -134,37 +124,20 @@ export default {
                 logger.warn(`Failed to save giveaway to database: ${giveawayMessage.id}`);
             }
 
-            
             try {
                 await logEvent({
                     client: interaction.client,
                     guildId: interaction.guildId,
                     eventType: EVENT_TYPES.GIVEAWAY_CREATE,
                     data: {
-                        description: `Giveaway created: ${prizeName}`,
+                        description: `Giveaway creado: ${prizeName}`,
                         channelId: targetChannel.id,
                         userId: interaction.user.id,
                         fields: [
-                            {
-                                name: '🎁 Prize',
-                                value: prizeName,
-                                inline: true
-                            },
-                            {
-                                name: '🏆 Winners',
-                                value: winnerCount.toString(),
-                                inline: true
-                            },
-                            {
-                                name: '⏰ Duration',
-                                value: durationString,
-                                inline: true
-                            },
-                            {
-                                name: '📍 Channel',
-                                value: targetChannel.toString(),
-                                inline: true
-                            }
+                            { name: '🎁 Premio', value: prizeName, inline: true },
+                            { name: '🏆 Ganadores', value: winnerCount.toString(), inline: true },
+                            { name: '⏰ Duración', value: durationString, inline: true },
+                            { name: '📍 Canal', value: targetChannel.toString(), inline: true }
                         ]
                     }
                 });
@@ -174,12 +147,11 @@ export default {
 
             logger.info(`Giveaway created successfully: ${giveawayMessage.id} in ${targetChannel.name}`);
 
-            
             await InteractionHelper.safeReply(interaction, {
                 embeds: [
                     successEmbed(
-                        `Giveaway Started! 🎉`,
-                        `A new giveaway for **${prizeName}** has been started in ${targetChannel} and will end in **${durationString}**.`,
+                        `¡Sorteo iniciado! 🎉`,
+                        `El sorteo de **${prizeName}** fue iniciado en ${targetChannel} y terminará en **${durationString}**.`,
                     ),
                 ],
                 flags: MessageFlags.Ephemeral,
@@ -194,6 +166,5 @@ export default {
         }
     },
 };
-
 
 
