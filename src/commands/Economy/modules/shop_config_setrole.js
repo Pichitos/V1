@@ -8,7 +8,7 @@ export default {
     async execute(interaction, config, client) {
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
             return InteractionHelper.safeReply(interaction, {
-                embeds: [errorEmbed('Permission Denied', 'You need **Manage Server** permissions to set the premium role.')],
+                embeds: [errorEmbed('Permiso denegado', 'Necesitas permisos de **Administrar servidor** para establecer el rol premium.')],
                 ephemeral: true,
             });
         }
@@ -22,13 +22,18 @@ export default {
             await setGuildConfig(client, guildId, currentConfig);
 
             return InteractionHelper.safeReply(interaction, {
-                embeds: [successEmbed('✅ Premium Role Set', `The **Premium Shop Role** has been set to ${role.toString()}. Members who purchase the Premium Role item will be granted this role.`)],
+                embeds: [
+                    successEmbed(
+                        '✅ Rol Premium establecido',
+                        `El **Rol Premium de la tienda** ha sido configurado como ${role.toString()}. Los miembros que compren este rol lo recibirán automáticamente.`
+                    )
+                ],
                 ephemeral: true,
             });
         } catch (error) {
             logger.error('shop_config_setrole error:', error);
             return InteractionHelper.safeReply(interaction, {
-                embeds: [errorEmbed('System Error', 'Could not save the guild configuration.')],
+                embeds: [errorEmbed('Error del sistema', 'No se pudo guardar la configuración del servidor.')],
                 ephemeral: true,
             });
         }
