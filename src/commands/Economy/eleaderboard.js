@@ -7,7 +7,7 @@ import { InteractionHelper } from '../../utils/interactionHelper.js';
 export default {
     data: new SlashCommandBuilder()
         .setName("eleaderboard")
-        .setDescription("View the server's top 10 richest users.")
+        .setDescription("Ver los 10 usuarios más ricos del servidor.")
         .setDMPermission(false),
     
     
@@ -17,7 +17,7 @@ export default {
 
             const guildId = interaction.guildId;
 
-            logger.debug(`[ECONOMY] Leaderboard requested`, { guildId });
+            logger.debug(`[ECONOMY] Leaderboard solicitado`, { guildId });
 
             const prefix = `economy:${guildId}:`;
 
@@ -31,7 +31,7 @@ export default {
                 throw createError(
                     "No economy data found",
                     ErrorTypes.VALIDATION,
-                    "No economy data found for this server."
+                    "No se encontraron datos de economía para este servidor."
                 );
             }
 
@@ -68,7 +68,7 @@ export default {
                 );
             }
 
-            logger.info(`[ECONOMY] Leaderboard generated`, { 
+            logger.info(`[ECONOMY] Leaderboard generado`, { 
                 guildId, 
                 userCount: allUserData.length,
                 userRank 
@@ -76,12 +76,12 @@ export default {
 
             const description = leaderboardEntries.length > 0
                 ? leaderboardEntries.join("\n")
-                : "No economy data is available for this server yet.";
+                : "Todavía no hay datos de economía disponibles en este servidor.";
 
             const embed = createEmbed({
-                title: `Economy Leaderboard`,
+                title: `Ranking de Economía`,
                 description,
-                footer: `Your Rank: ${userRank > 0 ? `#${userRank}` : "No ranking data available"}`,
+                footer: `Tu posición: ${userRank > 0 ? `#${userRank}` : "No hay datos de ranking disponibles"}`,
             });
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
