@@ -11,7 +11,7 @@ const SHOP_ITEMS = shopItems;
 export default {
     data: new SlashCommandBuilder()
         .setName('inventory')
-        .setDescription('View your economy inventory'),
+        .setDescription('Ver tu inventario de economía'),
 
     execute: withErrorHandling(async (interaction, config, client) => {
         const deferred = await InteractionHelper.safeDefer(interaction);
@@ -20,7 +20,7 @@ export default {
             const userId = interaction.user.id;
             const guildId = interaction.guildId;
 
-            logger.debug(`[ECONOMY] Inventory requested for ${userId}`, { userId, guildId });
+            logger.debug(`[ECONOMY] Inventario solicitado para ${userId}`, { userId, guildId });
 
             const userData = await getEconomyData(client, guildId, userId);
 
@@ -28,14 +28,14 @@ export default {
                 throw createError(
                     "Failed to load economy data for inventory",
                     ErrorTypes.DATABASE,
-                    "Failed to load your economy data. Please try again later.",
+                    "No se pudieron cargar tus datos de economía. Inténtalo de nuevo más tarde.",
                     { userId, guildId }
                 );
             }
 
             const inventory = userData.inventory || {};
 
-            let inventoryDescription = "Your inventory is currently empty.";
+            let inventoryDescription = "Tu inventario está vacío actualmente.";
 
             if (Object.keys(inventory).length > 0) {
                 inventoryDescription = Object.entries(inventory)
@@ -54,21 +54,20 @@ export default {
                     .join("\n");
             }
 
-            logger.info(`[ECONOMY] Inventory retrieved`, { 
+            logger.info(`[ECONOMY] Inventario obtenido`, { 
                 userId, 
                 guildId,
                 itemCount: Object.keys(inventory).length
             });
 
             const embed = createEmbed({ 
-                title: `📦 ${interaction.user.username}'s Inventory`, 
+                title: `📦 Inventario de ${interaction.user.username}`, 
                 description: inventoryDescription, 
             }).setThumbnail(interaction.user.displayAvatarURL());
 
             await InteractionHelper.safeEditReply(interaction, { embeds: [embed] });
     }, { command: 'inventory' })
 };
-
 
 
 
